@@ -1,13 +1,13 @@
-FROM bellsoft/liberica-openjdk-alpine:20
+FROM openjdk:20-alpine AS builder
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
+COPY src src
+RUN chmod +x ./gradlew
+RUN ./gradlew bootJAR
 
-CMD ["./gradlew", "clean", "build"]
-
-VOLUME /tmp
-
-ARG JAR_FILE=build/libs/*.jar
-
-COPY ${JAR_FILE} app.jar
-
+FROM openjdk:20-alpine
 EXPOSE 8080
-
-ENTRYPOINT ["java","-jar","/app.jar"]
+COPY --from=builder build/libs/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
