@@ -1,6 +1,6 @@
-package com.websever.websever.repository;
+package com.websever.repository;
 
-import com.websever.websever.entity.basicEntity;
+import com.websever.entity.basicEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface basicRepository extends JpaRepository<basicEntity, Long> {
