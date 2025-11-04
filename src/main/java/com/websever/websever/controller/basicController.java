@@ -1,7 +1,7 @@
-package com.websever.controller;
+package com.websever.websever.controller;
 
-import com.websever.entity.basicEntity;
-import com.websever.service.basicService;
+import com.websever.websever.entity.basicEntity;
+import com.websever.websever.service.basicService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

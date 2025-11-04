@@ -1,4 +1,4 @@
-package com.websever;
+package com.websever.websever;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

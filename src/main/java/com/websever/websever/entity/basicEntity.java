@@ -1,4 +1,4 @@
-package com.websever.entity;
+package com.websever.websever.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

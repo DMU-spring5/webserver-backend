@@ -1,7 +1,7 @@
-package com.websever.service;
+package com.websever.websever.service;
 
-import com.websever.entity.basicEntity;
-import com.websever.repository.basicRepository;
+import com.websever.websever.entity.basicEntity;
+import com.websever.websever.repository.basicRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
