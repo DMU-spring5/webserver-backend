@@ -10,13 +10,14 @@ import java.util.List;
 
 @RestController
 class basicController {
+
     private final basicService basicService;
 
     public basicController(basicService basicService) {
         this.basicService = basicService;
     }
 
-    @GetMapping("/api/test")
+    @GetMapping("/api/testll")
     public List<basicEntity> runDbTestAndGetMessages() {
         basicService.saveTestMessage("데베 연결 굿: " + java.time.LocalDateTime.now());
         
