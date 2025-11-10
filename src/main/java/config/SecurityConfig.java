@@ -31,6 +31,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // 회원가입과 로그인 API는 인증 없이 접근 허용
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+
 
                         // 나머지 모든 요청은 인증 필요 (로그인 필수)
                         .anyRequest().authenticated()

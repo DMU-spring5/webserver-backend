@@ -1,6 +1,8 @@
 //api,프론트엔드의 요청 수락
 package com.websever.websever.controller;
 
+import com.websever.websever.dto.LoginRequest;
+
 import com.websever.websever.entity.UserEntity;
 import com.websever.websever.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -30,5 +32,29 @@ public class AuthController {
             return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
         }
     }
+
+    //로그인 api추가
+    @PostMapping("/login")
+    public ResponseEntity<String> signIn(@RequestBody LoginRequest loginRequest) {
+        try {
+            UserEntity authenticatedUser = authService.signIn(
+                    loginRequest.getUserId(),
+                    loginRequest.getPassword()
+            );
+
+            // TODO: 여기서 JWT 토큰을 생성 및 반환.
+            String successMessage = authenticatedUser.getUserId() + "님, 로그인에 성공했습니다.";
+            return ResponseEntity.ok(successMessage);
+
+        } catch (IllegalArgumentException e) {
+            // 아이디 또는 비밀번호 불일치
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
+        }
+    }
+
+
+
 
 }
