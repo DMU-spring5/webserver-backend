@@ -13,7 +13,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     boolean existsByUserId(String userId);
     Optional<UserEntity> findByUserId(String userId);
 
-
+    //아이디를 찾기 위한 닉네임 검색 메소드
+    Optional<UserEntity> findByNickname(String nickname);
 
 
 }

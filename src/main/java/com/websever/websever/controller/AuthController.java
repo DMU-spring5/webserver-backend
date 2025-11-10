@@ -2,7 +2,8 @@
 package com.websever.websever.controller;
 
 import com.websever.websever.dto.LoginRequest;
-
+import com.websever.websever.dto.FindIdRequest;
+import com.websever.websever.dto.FindPasswordRequest;
 import com.websever.websever.entity.UserEntity;
 import com.websever.websever.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +55,47 @@ public class AuthController {
         }
     }
 
+    // 아이디 찾기 API
+    @PostMapping("/find-id")
+    public ResponseEntity<String> findId(@RequestBody FindIdRequest findIdRequest) {
+        try {
+            String userId = authService.findUserId(
+                    findIdRequest.getNickname(),
+                    findIdRequest.getPassword()
+            );
+
+            String successMessage = "회원님의 아이디는 " + userId + " 입니다.";
+            return ResponseEntity.ok(successMessage);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
+        }
+    }
+
+    //비밀번호 찾기 API
+    @PostMapping("/find-password")
+    public ResponseEntity<String> findPassword(@RequestBody FindPasswordRequest findPasswordRequest) {
+        try {
+            boolean isUserVerified = authService.verifyUserForPasswordReset(
+                    findPasswordRequest.getNickname(),
+                    findPasswordRequest.getUserId()
+            );
+
+            if (isUserVerified) {
+
+                return ResponseEntity.ok("사용자 정보가 확인되었습니다. (비밀번호 변경 페이지로 이동)");
+            } else {
+                return ResponseEntity.badRequest().body("사용자 정보가 일치하지 않습니다.");
+            }
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
+        }
+    }
 
 
 
