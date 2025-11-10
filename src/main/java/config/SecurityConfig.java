@@ -33,6 +33,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
 
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/find-id").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/find-password").permitAll()
+
+
 
                         // 나머지 모든 요청은 인증 필요 (로그인 필수)
                         .anyRequest().authenticated()

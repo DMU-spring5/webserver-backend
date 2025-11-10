@@ -57,5 +57,37 @@ public class AuthService {
         return user;
     }
 
+    // 아이디 찾기 메서드
+    @Transactional(readOnly = true)
+    public String findUserId(String nickname, String rawPassword) {
+
+        // 1. 닉네임으로 사용자 찾기
+        UserEntity user = userRepository.findByNickname(nickname)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 닉네임입니다."));
+
+        // 2. 비밀번호 일치 여부 확인
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+
+        return user.getUserId();
+    }
+
+    //비밀번호 찾기 메서드
+    @Transactional(readOnly = true)
+    public boolean verifyUserForPasswordReset(String nickname, String userId) {
+
+        // 1. 아이디로 사용자 찾기
+        UserEntity user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
+
+        // 2. 닉네임 일치 여부 확인
+        if (!user.getNickname().equals(nickname)) {
+            throw new IllegalArgumentException("닉네임 정보가 일치하지 않습니다.");
+        }
+
+        return true;
+    }
 
 }
