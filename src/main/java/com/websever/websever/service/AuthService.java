@@ -40,4 +40,22 @@ public class AuthService {
         return userRepository.save(userEntity);
     }
 
+    //로그인 메소드
+    @Transactional(readOnly = true)
+    public UserEntity signIn(String userId, String rawPassword) {
+
+        // 1. 아이디로 사용자 찾기
+        UserEntity user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다.")); // 기획서 오류 메시지 [cite: 129]
+
+        // 2. 비밀번호 일치 여부 확인
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다."); // 기획서 오류 메시지 [cite: 150]
+        }
+
+        // 3. 인증 성공 시 사용자 정보 반환
+        return user;
+    }
+
+
 }

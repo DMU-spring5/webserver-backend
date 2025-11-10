@@ -11,5 +11,9 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
     // 아이디 중복 확인 메소드
     boolean existsByUserId(String userId);
+    Optional<UserEntity> findByUserId(String userId);
+
+
+
 
 }
