@@ -6,7 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class LoginResponse {
-
-    private String token; // JWT 토큰을 담을 필드
-
+    private String token;
 }
