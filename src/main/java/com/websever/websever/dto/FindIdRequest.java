@@ -1,8 +1,8 @@
-
-        package com.websever.websever.dto;
+package com.websever.websever.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+
 @Getter
 @Setter
 public class FindIdRequest {
