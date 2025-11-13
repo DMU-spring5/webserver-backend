@@ -2,6 +2,7 @@
 package com.websever.websever.controller;
 
 import com.websever.websever.dto.LoginRequest;
+import com.websever.websever.dto.LoginResponse;
 import com.websever.websever.dto.FindIdRequest;
 import com.websever.websever.dto.FindPasswordRequest;
 import com.websever.websever.entity.UserEntity;
@@ -36,16 +37,14 @@ public class AuthController {
 
     //로그인 api추가
     @PostMapping("/login")
-    public ResponseEntity<String> signIn(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> signIn(@RequestBody LoginRequest loginRequest) {
         try {
-            UserEntity authenticatedUser = authService.signIn(
+            String token= authService.signIn(
                     loginRequest.getUserId(),
                     loginRequest.getPassword()
             );
 
-            // TODO: 여기서 JWT 토큰을 생성 및 반환.
-            String successMessage = authenticatedUser.getUserId() + "님, 로그인에 성공했습니다.";
-            return ResponseEntity.ok(successMessage);
+            return ResponseEntity.ok(new LoginResponse(token));
 
         } catch (IllegalArgumentException e) {
             // 아이디 또는 비밀번호 불일치
