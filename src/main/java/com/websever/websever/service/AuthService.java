@@ -1,6 +1,7 @@
 //데베 접근과 비밀번호 암호화
 package com.websever.websever.service;
 
+import com.websever.websever.dto.SignupResponse;
 import com.websever.websever.entity.UserEntity;
 import com.websever.websever.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +15,10 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
-    public UserEntity signup(UserEntity userEntity) {
+    public SignupResponse signup(UserEntity userEntity) {
 
         //아이디중복 검사
         if (userRepository.existsByUserId(userEntity.getUserId())) {
@@ -37,7 +39,17 @@ public class AuthService {
         userEntity.setServiceAgreed("Y");
         userEntity.setLocationAgreed("Y");
 
-        return userRepository.save(userEntity);
+        UserEntity savedUser= userRepository.save(userEntity);
+        //저장된 사용자 정보로 jwt토큰 생성
+        String token= jwtTokenProvider.generateToken(savedUser.getUserId());
+
+        return SignupResponse.builder()
+                .id(savedUser.getId()) //자동 생성된 id
+                        .userId(savedUser.getUserId()) //사용자가 입력한 id
+                        .token(token)
+                                .build();
+
+
     }
 
     //로그인 메소드
@@ -56,6 +68,4 @@ public class AuthService {
         // 3. 인증 성공 시 사용자 정보 반환
         return user;
     }
-
-
 }
