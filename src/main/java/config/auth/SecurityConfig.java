@@ -1,6 +1,6 @@
-package com.websever.websever.config;
+package config.auth;
 
-import com.websever.websever.service.JwtTokenProvider;
+import com.websever.websever.service.auth.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +38,7 @@ public class SecurityConfig {
 
                 // API 경로별 권한 설정
                 .authorizeHttpRequests(authorize -> authorize
-                        // "/api/v1/auth/"로 시작하는 모든 POST 요청은 인증 없이 허용
+                        // "/api/v1/com.websever.websever.controller.auth/"로 시작하는 모든 POST 요청은 인증 없이 허용
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
 
                         // 나머지 모든 요청은 인증 필요
@@ -47,7 +47,7 @@ public class SecurityConfig {
 
                 // JWT 필터를 Spring Security 필터 체인에 추가
                 .addFilterBefore(
-                        new com.websever.websever.config.JwtAuthenticationFilter(jwtTokenProvider),
+                        new JwtAuthenticationFilter(jwtTokenProvider),
                         UsernamePasswordAuthenticationFilter.class
                 );
 

@@ -1,6 +1,6 @@
 package com.websever.websever.exception;
 
-import com.websever.websever.dto.ErrorResponse;
+import com.websever.websever.dto.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

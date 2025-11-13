@@ -1,6 +1,6 @@
-package com.websever.websever.config;
+package config.auth;
 
-import com.websever.websever.service.JwtTokenProvider;
+import com.websever.websever.service.auth.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

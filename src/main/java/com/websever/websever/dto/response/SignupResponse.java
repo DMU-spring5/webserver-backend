@@ -1,4 +1,4 @@
-package com.websever.websever.dto;
+package com.websever.websever.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

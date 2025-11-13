@@ -1,8 +1,12 @@
-package com.websever.websever.controller;
+package com.websever.websever.controller.auth;
 
-import com.websever.websever.dto.*;
-import com.websever.websever.entity.UserEntity;
-import com.websever.websever.service.AuthService;
+import com.websever.websever.dto.request.FindIdRequest;
+import com.websever.websever.dto.request.FindPasswordRequest;
+import com.websever.websever.dto.request.LoginRequest;
+import com.websever.websever.dto.response.LoginResponse;
+import com.websever.websever.dto.response.SignupResponse;
+import com.websever.websever.entity.auth.UserEntity;
+import com.websever.websever.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
