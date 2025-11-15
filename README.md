@@ -22,7 +22,7 @@ webserver_backend/
 │       │               ├── service         # 비즈니스 로직 처리
 │       │               │   └── basicService
 │       │               ├── WebSeverApplication
-│       │               └── config         # render 전용 ping 던지기
+│       │               └── com.websever.websever.config         # render 전용 ping 던지기
 │       │                   └── KeepAlive
 │       └── resources
 │           └── application.properties

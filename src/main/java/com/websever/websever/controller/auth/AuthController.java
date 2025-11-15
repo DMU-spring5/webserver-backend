@@ -4,7 +4,6 @@ import com.websever.websever.dto.request.FindIdRequest;
 import com.websever.websever.dto.request.FindPasswordRequest;
 import com.websever.websever.dto.request.LoginRequest;
 import com.websever.websever.dto.response.LoginResponse;
-import com.websever.websever.dto.response.SignupResponse;
 import com.websever.websever.entity.auth.UserEntity;
 import com.websever.websever.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -23,19 +22,19 @@ public class AuthController {
 
     // [회원가입]
     @PostMapping("/signup")
-    public ResponseEntity<SignupResponse> signup(@RequestBody UserEntity userEntity) {
-        SignupResponse signupResponse = authService.signup(userEntity);
+    public ResponseEntity<LoginResponse> signup(@RequestBody UserEntity userEntity) {
+        LoginResponse signupResponse = authService.signup(userEntity);
         return ResponseEntity.ok(signupResponse);
     }
 
     // [로그인]
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> signIn(@RequestBody LoginRequest loginRequest) {
-        String token = authService.signIn(
+        LoginResponse loginResponse = authService.signIn(
                 loginRequest.getUserId(),
                 loginRequest.getPassword()
         );
-        return ResponseEntity.ok(new LoginResponse(token));
+        return ResponseEntity.ok(loginResponse);
     }
 
     // [아이디 찾기]

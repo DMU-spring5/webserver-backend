@@ -1,5 +1,6 @@
 package com.websever.websever.service.auth;
 
+import com.websever.websever.dto.response.LoginResponse;
 import com.websever.websever.dto.response.SignupResponse;
 import com.websever.websever.entity.auth.UserEntity;
 import com.websever.websever.repository.auth.UserRepository;
@@ -18,7 +19,7 @@ public class AuthService {
 
     // [회원가입]
     @Transactional
-    public SignupResponse signup(UserEntity userEntity) {
+    public LoginResponse signup(UserEntity userEntity) {
         if (userRepository.existsByUserId(userEntity.getUserId())) {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
@@ -33,25 +34,36 @@ public class AuthService {
         userEntity.setLocationAgreed("Y");
 
         UserEntity savedUser = userRepository.save(userEntity);
-        String token = jwtTokenProvider.generateToken(savedUser.getUserId());
+        String userIdentifier = savedUser.getUserId();
 
-        return SignupResponse.builder()
-                .id(savedUser.getId())
-                .userId(savedUser.getUserId())
-                .token(token)
+        String accessToken = jwtTokenProvider.generateToken(userIdentifier);
+
+        String refreshToken = jwtTokenProvider.generateRefreshToken(userIdentifier);
+
+        return LoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
     // [로그인]
     @Transactional(readOnly = true)
-    public String signIn(String userId, String rawPassword) {
+    public LoginResponse signIn(String userId, String rawPassword) {
         UserEntity user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
 
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
-        return jwtTokenProvider.generateToken(user.getUserId());
+        String userIdentifier = user.getUserId();
+
+        String accessToken = jwtTokenProvider.generateToken(userIdentifier);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(userIdentifier);
+
+        return LoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     // [아이디 찾기]
