@@ -1,6 +1,6 @@
-package com.websever.websever.repository;
+package com.websever.websever.repository.auth;
 
-import com.websever.websever.entity.UserEntity;
+import com.websever.websever.entity.auth.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
