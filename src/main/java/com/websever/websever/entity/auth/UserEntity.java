@@ -1,4 +1,4 @@
-package com.websever.websever.entity;
+package com.websever.websever.entity.auth;
 
 import jakarta.persistence.*;
 import lombok.*;
