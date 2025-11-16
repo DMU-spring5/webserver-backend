@@ -1,8 +1,8 @@
-package com.websever.websever.service;
+package com.websever.websever.service.auth;
 
-import com.websever.websever.dto.SignupResponse;
-import com.websever.websever.entity.UserEntity;
-import com.websever.websever.repository.UserRepository;
+import com.websever.websever.dto.response.SignupResponse;
+import com.websever.websever.entity.auth.UserEntity;
+import com.websever.websever.repository.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

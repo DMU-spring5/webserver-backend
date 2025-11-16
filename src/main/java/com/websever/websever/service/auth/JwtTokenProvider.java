@@ -1,4 +1,4 @@
-package com.websever.websever.service;
+package com.websever.websever.service.auth;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

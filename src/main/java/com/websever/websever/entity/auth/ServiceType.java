@@ -1,4 +1,4 @@
-package com.websever.websever.entity;
+package com.websever.websever.entity.auth;
 
 public enum ServiceType {
     army,
