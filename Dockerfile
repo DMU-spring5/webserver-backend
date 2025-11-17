@@ -1,4 +1,5 @@
-FROM openjdk:20-alpine AS builder
+FROM gradle:8.6-jdk21 AS builder
+WORKDIR /app
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle .
@@ -7,7 +8,8 @@ COPY src src
 RUN chmod +x ./gradlew
 RUN ./gradlew bootJAR
 
-FROM openjdk:20-alpine
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
 EXPOSE 9191
-COPY --from=builder build/libs/*.jar app.jar
+COPY --from=builder /app/build/libs/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
