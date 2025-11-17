@@ -1,4 +1,4 @@
-package com.websever.websever.config.auth;
+package config.auth;
 
 import com.websever.websever.service.auth.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
