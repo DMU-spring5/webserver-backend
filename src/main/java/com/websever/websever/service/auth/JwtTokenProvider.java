@@ -23,6 +23,7 @@ public class JwtTokenProvider {
 
     private final SecretKey key;
     private final long validityInMilliseconds = 3600000; // 1시간
+    private final long refreshTokenValidityInMilliseconds = 1209600000; //2주
     private final UserDetailsService userDetailsService;
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, UserDetailsService userDetailsService) {
@@ -34,6 +35,18 @@ public class JwtTokenProvider {
     public String generateToken(String userId) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
+
+        return Jwts.builder()
+                .claim(Claims.SUBJECT, userId)
+                .claim(Claims.ISSUED_AT, now)
+                .claim(Claims.EXPIRATION, validity)
+                .signWith(key)
+                .compact();
+    }
+
+    public String generateRefreshToken(String userId) {
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds); // 긴 유효기간 적용
 
         return Jwts.builder()
                 .claim(Claims.SUBJECT, userId)
