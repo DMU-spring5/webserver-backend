@@ -1,9 +1,10 @@
 package com.websever.websever.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.websever.websever.entity.DataCacheEntity;
 import com.websever.websever.repository.DataCacheRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -14,114 +15,81 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.Optional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TransportationService {
 
     private final RestTemplate restTemplate;
     private final DataCacheRepository dataCacheRepository;
+    private final ObjectMapper objectMapper; // [1] JSON 변환기 추가
 
     @Value("${naver.client.id}")
     private String naverClientId;
+
     @Value("${naver.client.secret}")
     private String naverClientSecret;
 
-
     private final String geocodingApiUrl = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode";
 
-    private final String transitApiUrl = "https://naveropenapi.apigw.ntruss.com/map-direction/v1/transit";
-
-
-
-    private HttpHeaders createNaverApiHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-NCP-APIGW-API-KEY-ID", naverClientId);
-        headers.set("X-NCP-APIGW-API-KEY", naverClientSecret);
-        return headers;
-    }
-
-
     public String searchLocationByQuery(String query) {
+
         String cacheDataType = "NAVER_GEOCODE_" + query;
+
         Optional<DataCacheEntity> cachedData = dataCacheRepository
                 .findFirstByDataTypeOrderByFetchedAtDesc(cacheDataType);
 
+        // [2] 캐시 읽기 로직 수정 (Map -> String 변환)
         if (cachedData.isPresent() && cachedData.get().getFetchedAt().isAfter(OffsetDateTime.now().minusDays(1))) {
-            log.info("캐시된 응답 반환: {}", cacheDataType);
-            return cachedData.get().getContent();
+            try {
+                // DB에 있는 Map 데이터를 JSON 문자열로 변환해서 반환
+                return objectMapper.writeValueAsString(cachedData.get().getContent());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("캐시 데이터 변환 중 오류 발생", e);
+            }
         }
 
-        log.info("Naver API 호출: {}", cacheDataType);
-        HttpHeaders headers = createNaverApiHeaders();
+        // 3. API 호출을 위한 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-NCP-APIGW-API-KEY-ID", naverClientId);
+        headers.set("X-NCP-APIGW-API-KEY", naverClientSecret);
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         URI uri = UriComponentsBuilder.fromUriString(geocodingApiUrl)
                 .queryParam("query", query)
                 .build()
-                .encode(StandardCharsets.UTF_8)
+                .encode()
                 .toUri();
 
+        // 5. Naver API 호출
         ResponseEntity<String> response = restTemplate.exchange(
-                uri, HttpMethod.GET, entity, String.class
+                uri,
+                HttpMethod.GET,
+                entity,
+                String.class
         );
 
         String responseBody = response.getBody();
-        DataCacheEntity newCache = new DataCacheEntity();
-        newCache.setDataType(cacheDataType);
-        newCache.setContent(responseBody);
-        newCache.setSource("Naver Geocoding");
-        dataCacheRepository.save(newCache);
 
-        return responseBody;
-    }
+        // [3] 캐시 저장 로직 수정 (String -> Map 변환)
+        if (responseBody != null) {
+            try {
+                // API에서 받은 JSON 문자열을 Map으로 변환
+                Map<String, Object> jsonMap = objectMapper.readValue(responseBody, Map.class);
 
-    // 지하철 경로 탐색
+                DataCacheEntity newCache = new DataCacheEntity();
+                newCache.setDataType(cacheDataType);
+                newCache.setContent(jsonMap); // Map 형태로 저장
+                newCache.setSource("Naver Geocoding");
+                dataCacheRepository.save(newCache);
 
-    public String findSubwayPath(String startStation, String endStation) {
-
-
-        String cacheDataType = "TRANSIT_PATH_" + startStation + "_" + endStation;
-
-
-        Optional<DataCacheEntity> cachedData = dataCacheRepository
-                .findFirstByDataTypeOrderByFetchedAtDesc(cacheDataType);
-
-        if (cachedData.isPresent() && cachedData.get().getFetchedAt().isAfter(OffsetDateTime.now().minusHours(1))) {
-            log.info("캐시된 대중교통 경로 반환: {}", cacheDataType);
-            return cachedData.get().getContent();
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("API 응답 데이터 파싱 오류", e);
+            }
         }
-
-        // 3. 캐시가 없으면 Naver API 호출
-        log.info("Naver 대중교통 API 호출: {}", cacheDataType);
-        HttpHeaders headers = createNaverApiHeaders();
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        // 4. URL 및 파라미터 빌드 (start, goal 파라미터 사용)
-        URI uri = UriComponentsBuilder.fromUriString(transitApiUrl)
-                .queryParam("start", startStation)
-                .queryParam("goal", endStation)
-                .build()
-                .encode(StandardCharsets.UTF_8)
-                .toUri();
-
-        // 5. API 호출
-        ResponseEntity<String> response = restTemplate.exchange(
-                uri, HttpMethod.GET, entity, String.class
-        );
-
-        String responseBody = response.getBody();
-
-        // 6. 새 데이터를 캐시에 저장
-        DataCacheEntity newCache = new DataCacheEntity();
-        newCache.setDataType(cacheDataType);
-        newCache.setContent(responseBody);
-        newCache.setSource("Naver Directions 15");
-        dataCacheRepository.save(newCache);
 
         return responseBody;
     }
