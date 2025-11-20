@@ -93,4 +93,16 @@ public class TransportationService {
 
         return responseBody;
     }
+    /**
+     * 지하철 경로를 찾아 JSON 형태의 문자열로 반환합니다.
+     * @param start 출발역 이름
+     * @param end 도착역 이름
+     * @return 경로 정보가 담긴 JSON 문자열
+     */
+    public String findSubwayPath(String start, String end) {
+        // TODO: 여기에 실제 지하철 경로 탐색 및 데이터 처리 로직을 구현해야 합니다.
+
+        // 임시 반환 값 (에러 해결 후 실제 로직으로 교체하세요)
+        return "{\"result\": \"success\", \"message\": \"Path finding logic is not implemented yet.\"}";
+    }
 }
