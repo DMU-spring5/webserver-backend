@@ -1,5 +1,6 @@
 package com.websever.websever.controller;
 
+import com.websever.websever.dto.BusRouteDetailDto; // DTO 임포트 확인
 import com.websever.websever.service.BusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,11 +17,7 @@ public class BusController {
 
     private final BusService busService;
 
-    /**
-     * 버스 노선 검색 API
-     * 사용 예: /api/v1/transport/bus/search?cityCode=1000&busNo=150
-     */
-
+    // 1단계 검색 (String 유지)
     @GetMapping("/search")
     public Mono<ResponseEntity<String>> searchBus(
             @RequestParam String cityCode,
@@ -30,13 +27,10 @@ public class BusController {
                 .map(ResponseEntity::ok);
     }
 
-    /**
-     * 버스 노선 상세 정보 조회 API
-     * 사용 예: /api/v1/transport/bus/detail?laneId=12345
-     */
+    // 2단계 상세 조회 (DTO 반환으로 변경)
     @GetMapping("/detail")
-    public Mono<ResponseEntity<String>> getBusDetail(
-            @RequestParam String laneId
+    public Mono<ResponseEntity<BusRouteDetailDto>> getBusDetail(
+            @RequestParam(name = "laneId") String laneId
     ) {
         return busService.getBusLaneDetail(laneId)
                 .map(ResponseEntity::ok);
