@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // "/api/v1/com.websever.websever.controller.auth/"로 시작하는 모든 POST 요청은 인증 없이 허용
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
-
+                        .requestMatchers("/api/v1/bus/**", "/api/v1/transport/**").permitAll()
                         // 나머지 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
