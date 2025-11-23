@@ -1,33 +1,44 @@
 package com.websever.websever.controller;
 
-import com.websever.websever.dto.BusRouteInfoResponse;
-import com.websever.websever.service.BusDataService;
+import com.websever.websever.service.BusService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/v1/transport")
+@RequestMapping("/api/v1/transport/bus")
 @RequiredArgsConstructor
 public class BusController {
 
-    private final BusDataService busDataService;
+    private final BusService busService;
 
-    /*
-     지역 상세 선택 시 버스 정보 조회 API
+    /**
+     * 버스 노선 검색 API
+     * 사용 예: /api/v1/transport/bus/search?cityCode=1000&busNo=150
      */
 
-    @GetMapping("/bus/route-info")
-    public Mono<List<BusRouteInfoResponse.Item>> getBusRouteInfo(
+    @GetMapping("/search")
+    public Mono<ResponseEntity<String>> searchBus(
             @RequestParam String cityCode,
-            @RequestParam String routeNo) {
+            @RequestParam(required = false) String busNo
+    ) {
+        return busService.searchBusLane(cityCode, busNo)
+                .map(ResponseEntity::ok);
+    }
 
-        // Service를 호출하여 공공데이터 API로부터 정보를 가져오기
-        return busDataService.getBusRouteDetails(cityCode, routeNo);
+    /**
+     * 버스 노선 상세 정보 조회 API
+     * 사용 예: /api/v1/transport/bus/detail?laneId=12345
+     */
+    @GetMapping("/detail")
+    public Mono<ResponseEntity<String>> getBusDetail(
+            @RequestParam String laneId
+    ) {
+        return busService.getBusLaneDetail(laneId)
+                .map(ResponseEntity::ok);
     }
 }

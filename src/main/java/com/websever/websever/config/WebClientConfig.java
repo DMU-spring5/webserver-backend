@@ -33,7 +33,7 @@ public class WebClientConfig {
     public WebClient odsayWebClient() {
         return WebClient.builder()
                 .baseUrl("https://api.odsay.com/v1/api") // ODsay API 기본 주소
-                .defaultHeader(HttpHeaders.REFERER, "http://localhost:9191")
+                .defaultHeader(HttpHeaders.REFERER, "localhost:9191")
                 .build();
     }
 }
