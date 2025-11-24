@@ -1,59 +1,72 @@
 package com.websever.websever.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-
 import java.util.List;
 
 @Data
+// [중요] 이 어노테이션이 있어야 DTO에 없는 필드가 와도 에러가 안 납니다!
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BusRouteDetailDto {
 
     @JsonProperty("busNo")
-    private String busNo;           // 버스 번호 (예: 150)
+    private String busNo;
 
     @JsonProperty("busID")
-    private String busId;           // 노선 ID (시스템 내부용)
+    private String busId;
+
+    @JsonProperty("type")
+    private String type;
+
+    // [추가된 필드] 에러 원인 해결
+    @JsonProperty("busCityName")
+    private String busCityName;
+
+    // (혹시 몰라 함께 추가해둠)
+    @JsonProperty("busCityCode")
+    private int busCityCode;
 
     @JsonProperty("busCompanyNameKor")
-    private String companyName;     // 운수회사 (예: 서울교통네트웍)
+    private String companyName;
 
     @JsonProperty("busStartPoint")
-    private String startPoint;      // 기점 (예: 도봉산역)
+    private String startPoint;
 
     @JsonProperty("busEndPoint")
-    private String endPoint;        // 종점 (예: 시흥대교)
+    private String endPoint;
 
     @JsonProperty("busFirstTime")
-    private String firstTime;       // 첫차 시간 (예: 03:57)
+    private String firstTime;
 
     @JsonProperty("busLastTime")
-    private String lastTime;        // 막차 시간 (예: 22:00)
+    private String lastTime;
 
     @JsonProperty("busInterval")
-    private String interval;        // 배차 간격 (분)
+    private String interval;
 
-    // 2. 노선도 (정류장 목록)
     @JsonProperty("station")
     private List<StationDto> stations;
 
     @Data
+    @JsonIgnoreProperties(ignoreUnknown = true) // 내부 클래스에도 필수
     public static class StationDto {
         @JsonProperty("idx")
-        private int sequence;       // 순번
+        private int sequence;
 
         @JsonProperty("stationName")
-        private String stationName; // 정류장 이름
+        private String stationName;
 
         @JsonProperty("stationID")
-        private int stationId;      // 정류장 고유 ID
+        private int stationId;
 
         @JsonProperty("arsID")
-        private String arsId;       // 정류장 번호 (예: 10-001)
+        private String arsId;
 
         @JsonProperty("x")
-        private double longitude;   // 경도 (지도 표시용)
+        private double longitude;
 
         @JsonProperty("y")
-        private double latitude;    // 위도 (지도 표시용)
+        private double latitude;
     }
 }
