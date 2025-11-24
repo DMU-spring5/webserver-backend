@@ -22,4 +22,13 @@ public class TransportationController {
         String resultJson = transportationService.searchLocationByQuery(query);
         return ResponseEntity.ok(resultJson);
     }
+    //지하철 경로 상세 조회
+    @GetMapping("/subway-path")
+    public ResponseEntity<String> searchSubwayPath(
+            @RequestParam String start,
+            @RequestParam String end
+    ) {
+        String resultJson = transportationService.findSubwayPath(start, end);
+        return ResponseEntity.ok(resultJson);
+    }
 }

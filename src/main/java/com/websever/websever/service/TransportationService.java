@@ -1,8 +1,6 @@
 package com.websever.websever.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.websever.websever.entity.DataCacheEntity;
 import com.websever.websever.repository.DataCacheRepository;
@@ -31,10 +29,7 @@ public class TransportationService {
 
     private final RestTemplate restTemplate;
     private final DataCacheRepository dataCacheRepository;
-    private final ObjectMapper objectMapper;
-
-    @Value("${odsay.api.key}")
-    private String odsayApiKey;
+    private final ObjectMapper objectMapper; // [1] JSON 변환기 추가
 
     @Value("${naver.client.id}")
     private String naverClientId;
@@ -42,27 +37,25 @@ public class TransportationService {
     @Value("${naver.client.secret}")
     private String naverClientSecret;
 
-    private final String geocodingApiUrl = "https://maps.apigw.ntruss.com/map-geocode/v2/geocode";
-    private final String odsayBaseUrl = "https://api.odsay.com/v1/api/searchPubTransPath";
+    private final String geocodingApiUrl = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode";
 
     public String searchLocationByQuery(String query) {
         if (query == null || query.isBlank()) {
             throw new IllegalArgumentException("query는 필수입니다.");
         }
 
-        String normalizedQuery = query.trim().toLowerCase();
-        String cacheDataType = "NAVER_GEOCODE_" + normalizedQuery;
+        String cacheDataType = "NAVER_GEOCODE_" + query;
 
         Optional<DataCacheEntity> cachedData = dataCacheRepository
                 .findFirstByDataTypeOrderByFetchedAtDesc(cacheDataType);
 
-        if (cachedData.isPresent() &&
-                cachedData.get().getFetchedAt().isAfter(OffsetDateTime.now().minusDays(1))) {
-
+        // [2] 캐시 읽기 로직 수정 (Map -> String 변환)
+        if (cachedData.isPresent() && cachedData.get().getFetchedAt().isAfter(OffsetDateTime.now().minusDays(1))) {
             try {
+                // DB에 있는 Map 데이터를 JSON 문자열로 변환해서 반환
                 return objectMapper.writeValueAsString(cachedData.get().getContent());
             } catch (JsonProcessingException e) {
-                throw new RuntimeException("캐시 JSON 변환 실패", e);
+                throw new RuntimeException("캐시 데이터 변환 중 오류 발생", e);
             }
         }
 
@@ -119,20 +112,22 @@ public class TransportationService {
     }
 
 
-public String searchPubTransPath(double sx, double sy, double ex, double ey) {
-    try {
-        String encodedKey = URLEncoder.encode(odsayApiKey, StandardCharsets.UTF_8);
+        // [3] 캐시 저장 로직 수정 (String -> Map 변환)
+        if (responseBody != null) {
+            try {
+                // API에서 받은 JSON 문자열을 Map으로 변환
+                Map<String, Object> jsonMap = objectMapper.readValue(responseBody, Map.class);
 
-        URI uri = UriComponentsBuilder.fromUriString(odsayBaseUrl)
-                .queryParam("apiKey", encodedKey)
-                .queryParam("SX", sx)
-                .queryParam("SY", sy)
-                .queryParam("EX", ex)
-                .queryParam("EY", ey)
-                .queryParam("SearchPathType", 0)
-                .build(true)
-                .toUri();
-        log.info("ODsay Path Request: {}", uri);
+                DataCacheEntity newCache = new DataCacheEntity();
+                newCache.setDataType(cacheDataType);
+                newCache.setContent(jsonMap); // Map 형태로 저장
+                newCache.setSource("Naver Geocoding");
+                dataCacheRepository.save(newCache);
+
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("API 응답 데이터 파싱 오류", e);
+            }
+        }
 
         return restTemplate.getForObject(uri, String.class);
 
@@ -172,5 +167,17 @@ public String searchPubTransPath(double sx, double sy, double ex, double ey) {
         } catch (Exception e) {
             throw new RuntimeException("좌표 변환 중 오류 발생: " + address, e);
         }
+    }
+    /**
+     * 지하철 경로를 찾아 JSON 형태의 문자열로 반환합니다.
+     * @param start 출발역 이름
+     * @param end 도착역 이름
+     * @return 경로 정보가 담긴 JSON 문자열
+     */
+    public String findSubwayPath(String start, String end) {
+        // TODO: 여기에 실제 지하철 경로 탐색 및 데이터 처리 로직을 구현해야 합니다.
+
+        // 임시 반환 값 (에러 해결 후 실제 로직으로 교체하세요)
+        return "{\"result\": \"success\", \"message\": \"Path finding logic is not implemented yet.\"}";
     }
 }
