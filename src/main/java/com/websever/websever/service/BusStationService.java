@@ -1,63 +1,93 @@
 package com.websever.websever.service;
 
-import com.websever.websever.dto.BusArrivalResponse;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.websever.websever.dto.BusStationDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
-
 public class BusStationService {
 
-    private final WebClient arrivalWebClient;
-    private final String serviceKey;
+    private final WebClient odsayWebClient;
 
-    public BusStationService(@Qualifier("arrivalWebClient") WebClient arrivalWebClient,
-                             @Value("${api.service-key}") String serviceKey) {
-        this.arrivalWebClient = arrivalWebClient;
-        this.serviceKey = serviceKey;
+    @Value("${api.odsay.key}")
+    private String odsayApiKey;
+
+    private final ObjectMapper objectMapper;
+    private static final String ODSAY_BASE_URL = "https://api.odsay.com/v1/api";
+
+    public BusStationService(@Qualifier("odsayWebClient") WebClient odsayWebClient,
+                             ObjectMapper objectMapper) {
+        this.odsayWebClient = odsayWebClient;
+
+        this.objectMapper = objectMapper;
+        // JSON 응답이 단일 객체여도 List로 매핑할 수 있게 설정
+        this.objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+
+
+
+
     }
 
     /**
-     * 정류소 별 버스 도착 예정 정보 목록 조회
+     * 1단계: 정류장 검색 (ODsay 사용)
      */
-    public Mono<List<BusArrivalResponse.Item>> getBusArrivalList(String cityCode, String nodeId) {
-        return arrivalWebClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/getSttnAcctoArvlPrearngeInfoList")
-                        .queryParam("serviceKey", serviceKey)
-                        .queryParam("cityCode", cityCode)
-                        .queryParam("nodeId", nodeId)
-                        .queryParam("numOfRows", "20")
-                        .queryParam("pageNo", "1")
-                        .queryParam("_type", "json")
-                        .build())
-                .retrieve()
-                .bodyToMono(BusArrivalResponse.class)
-                .map(response -> {
+    public Mono<List<BusStationDto>> searchStation(String stationName, String x, String y) {
+        try {
+            String encodedKey = URLEncoder.encode(odsayApiKey, StandardCharsets.UTF_8);
+            String encodedName = URLEncoder.encode(stationName, StandardCharsets.UTF_8);
 
-                    if (response != null &&
-                            response.response() != null &&
-                            response.response().body() != null &&
-                            response.response().body().items() != null &&
-                            response.response().body().items().item() != null) {
+            StringBuilder query = new StringBuilder();
+            query.append("apiKey=").append(encodedKey)
+                    .append("&stationName=").append(encodedName)
+                    .append("&stationClass=1");
 
-                        return response.response().body().items().item();
-                    } else {
+            if (x != null && y != null && !x.isEmpty() && !y.isEmpty()) {
+                query.append("&x=").append(x).append("&y=").append(y);
+            }
 
-                        return Collections.<BusArrivalResponse.Item>emptyList();
-                    }
-                })
+            URI uri = URI.create(ODSAY_BASE_URL + "/searchStation?" + query.toString());
 
-                .onErrorResume(e -> {
-                    System.out.println("도착 정보 조회 중 오류: " + e.getMessage());
-
-                    return Mono.just(Collections.<BusArrivalResponse.Item>emptyList());
-                });
+            return odsayWebClient.get()
+                    .uri(uri)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .flatMap(json -> {
+                        try {
+                            JsonNode root = objectMapper.readTree(json);
+                            if (root.has("error")) {
+                                return Mono.error(new RuntimeException("ODsay Error: " + root.get("error").get(0).get("message").asText()));
+                            }
+                            JsonNode stations = root.path("result").path("station");
+                            List<BusStationDto> dtoList = new ArrayList<>();
+                            if (stations.isArray()) {
+                                for (JsonNode node : stations) {
+                                    BusStationDto dto = objectMapper.treeToValue(node, BusStationDto.class);
+                                    dtoList.add(dto);
+                                }
+                            }
+                            return Mono.just(dtoList);
+                        } catch (Exception e) {
+                            return Mono.error(e);
+                        }
+                    });
+        } catch (Exception e) {
+            return Mono.error(e);
+        }
     }
+
+
 }
