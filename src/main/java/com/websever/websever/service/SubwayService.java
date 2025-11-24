@@ -2,28 +2,23 @@ package com.websever.websever.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.websever.websever.dto.SubwayPathDto;
-import lombok.extern.slf4j.Slf4j;
+import com.websever.websever.dto.SubwayPathResponse;
+import com.websever.websever.exception.StationNotFoundException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 @Service
 public class SubwayService {
 
     private final WebClient odsayWebClient;
     private final String apiKey;
     private final ObjectMapper objectMapper;
-    private static final String BASE_URL = "https://api.odsay.com/v1/api";
 
     public SubwayService(@Qualifier("odsayWebClient") WebClient odsayWebClient,
                          @Value("${api.odsay.key}") String apiKey,
@@ -34,105 +29,138 @@ public class SubwayService {
     }
 
     /**
-     * 1. 지하철역 검색 (역 이름 -> ID 반환)
-     * 예: "서울역" -> "130"
+     * 실제 지하철 경로 검색 (ODsay API 연동)
      */
-    public Mono<String> searchStationId(String stationName, String cityCode) {
-        try {
-            String encodedKey = URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
-            String encodedName = URLEncoder.encode(stationName, StandardCharsets.UTF_8);
+    public Mono<SubwayPathResponse> searchSubwayPath(String region, String departure, String arrival, String time, String dayType) {
+        // 1. 출발역 좌표 구하기 -> 2. 도착역 좌표 구하기 -> 3. 경로 검색 (체이닝)
+        return getStationCoordinate(departure)
+                .zipWith(getStationCoordinate(arrival))
+                .flatMap(tuple -> {
+                    String startX = tuple.getT1().x(); // 필드명 그대로 메서드 호출
 
-            URI uri = URI.create(BASE_URL + "/searchStation?apiKey=" + encodedKey +
-                    "&stationName=" + encodedName +
-                    "&CID=" + cityCode +
-                    "&stationClass=2"); // 2=지하철
+                    String startY = tuple.getT1().y();
+                    String endX = tuple.getT2().x();
+                    String endY = tuple.getT2().y();
 
-            return odsayWebClient.get()
-                    .uri(uri)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .flatMap(json -> {
-                        try {
-                            JsonNode root = objectMapper.readTree(json);
-                            // 결과 중 첫 번째 역의 ID만 추출
-                            if (root.has("result") && root.get("result").has("station")) {
-                                String stationId = root.get("result").get("station").get(0).get("stationID").asText();
-                                return Mono.just(stationId);
-                            }
-                            return Mono.error(new RuntimeException("해당 역을 찾을 수 없습니다: " + stationName));
-                        } catch (Exception e) {
-                            return Mono.error(e);
-                        }
-                    });
-        } catch (Exception e) {
-            return Mono.error(e);
-        }
+                    return callPathApi(startX, startY, endX, endY);
+                });
     }
 
     /**
-     * 2. 지하철 경로 검색 (출발ID, 도착ID -> 경로 상세 정보)
+     * 역 이름으로 좌표(X, Y) 조회
+     * API: searchStation
      */
-    public Mono<SubwayPathDto> searchSubwayPath(String startId, String endId, String cityCode) {
-        try {
-            String encodedKey = URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
+    private Mono<Coordinate> getStationCoordinate(String stationName) {
 
-            // SID: 출발역ID, EID: 도착역ID, Sopt: 1(최단시간)
-            URI uri = URI.create(BASE_URL + "/subwayPath?apiKey=" + encodedKey +
-                    "&CID=" + cityCode + "&SID=" + startId + "&EID=" + endId + "&Sopt=1");
-
-            log.info("지하철 경로 검색 URI: {}", uri);
-
-            return odsayWebClient.get()
-                    .uri(uri)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .flatMap(json -> {
-                        try {
-                            JsonNode root = objectMapper.readTree(json);
+        String cleanedName= stationName.endsWith("역")? stationName.substring(0, stationName.length()-1) : stationName;
 
 
-                            if (root.has("error")) {
-                                String code = root.get("error").get(0).get("code").asText();
-                                String msg = root.get("error").get(0).get("message").asText();
-                                return Mono.error(new RuntimeException("ODsay API Error(" + code + "): " + msg));
-                            }
+        return odsayWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/searchStation")
+                        .queryParam("apiKey", apiKey)
+                        .queryParam("stationName", cleanedName)
+                        .queryParam("stationClass", "2") // 2: 지하철
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class)
+                .doOnNext(response-> System.out.println("ODsay응답 ["+ stationName + "]: " + response))
 
-                            JsonNode result = root.get("result");
-                            if (result == null) {
-                                return Mono.error(new RuntimeException("검색된 지하철 경로가 없습니다."));
-                            }
+                .map(json -> {
+                    try {
+                        JsonNode root = objectMapper.readTree(json);
 
-                            // DTO 매핑
-                            SubwayPathDto dto = new SubwayPathDto();
-                            dto.setGlobalTravelTime(result.get("globalTravelTime").asInt());
-                            dto.setFare(result.get("fare").asInt());
-                            dto.setStationCount(result.get("globalStationCount").asInt());
+                        boolean isStationFound = root.has("result") &&
+                                root.get("result").has("station") &&
+                                root.get("result").get("station").isArray() &&
+                                root.get("result").get("station").size() > 0;
 
-                            // 상세 경로 (driveInfo) 파싱
-                            List<SubwayPathDto.PathSegment> segments = new ArrayList<>();
-                            JsonNode driveInfos = result.get("driveInfoSet").get("driveInfo");
 
-                            if (driveInfos.isArray()) {
-                                for (JsonNode node : driveInfos) {
-                                    SubwayPathDto.PathSegment segment = new SubwayPathDto.PathSegment();
-                                    segment.setLaneName(node.get("laneName").asText());
-                                    segment.setStartName(node.get("startName").asText());
-                                    segment.setWayName(node.get("wayName").asText());
-                                    segment.setStationCount(node.get("stationCount").asInt());
-                                    segments.add(segment);
-                                }
-                                dto.setTransferCount(segments.size() - 1); // 환승 횟수 = 경로 개수 - 1
-                            }
-                            dto.setPaths(segments);
+                        if (isStationFound) {
 
-                            return Mono.just(dto);
-                        } catch (Exception e) {
-                            log.error("지하철 경로 파싱 오류", e);
-                            return Mono.error(e);
+                            JsonNode station = root.get("result").get("station").get(0);
+                            return new Coordinate(station.get("x").asText(), station.get("y").asText());
                         }
-                    });
+
+                        throw new StationNotFoundException("지하철 역 정보를 찾을 수 없습니다: " + stationName);
+
+                    } catch (StationNotFoundException e) {
+
+                        throw e;
+
+                    } catch (Exception e) {
+                        throw new RuntimeException("좌표 변환 중 기술적 오류 발생: " + stationName, e);
+                    }
+                });
+    }
+
+    /**
+     * 좌표를 이용한 대중교통 길찾기
+     * API: searchPubTransPathT
+     */
+    private Mono<SubwayPathResponse> callPathApi(String sx, String sy, String ex, String ey) {
+        return odsayWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/searchPubTransPathT")
+                        .queryParam("apiKey", apiKey)
+                        .queryParam("SX", sx).queryParam("SY", sy)
+                        .queryParam("EX", ex).queryParam("EY", ey)
+                        .queryParam("SearchPathType", "1") // 1: 지하철만 이용
+                        .build())
+                .retrieve()
+                .bodyToMono(String.class)
+                .map(this::parseOdsayResponse);
+    }
+
+
+    private SubwayPathResponse parseOdsayResponse(String json) {
+        try {
+            JsonNode root = objectMapper.readTree(json);
+
+            if (!root.has("result")) {
+                throw new RuntimeException("경로를 찾을 수 없습니다.");
+            }
+
+            // 첫 번째 추천 경로(최적 경로) 가져오기
+            JsonNode path = root.get("result").get("path").get(0);
+            JsonNode info = path.get("info");
+
+            int totalTime = info.get("totalTime").asInt();
+            int totalFare = info.get("payment").asInt();
+            int transferCount = info.get("busTransitCount").asInt() + info.get("subwayTransitCount").asInt() - 1;
+            if (transferCount < 0) transferCount = 0;
+            int stationCount = info.get("totalStationCount").asInt();
+
+            List<SubwayPathResponse.PathSegment> segments = new ArrayList<>();
+            JsonNode subPaths = path.get("subPath");
+
+            for (JsonNode subPath : subPaths) {
+                if (subPath.get("trafficType").asInt() == 1) { // 1: 지하철
+                    String startName = subPath.get("startName").asText();
+                    String endName = subPath.get("endName").asText();
+                    String lineName = subPath.get("lane").get(0).get("name").asText(); // 호선 정보
+                    int sectionTime = subPath.get("sectionTime").asInt();
+                    int count = subPath.get("stationCount").asInt();
+
+                    segments.add(new SubwayPathResponse.PathSegment(startName, endName, lineName, sectionTime, count));
+                }
+            }
+
+            // 여기서는 빈 문자열로 둡니다 (프론트에서 계산 가능)
+            return new SubwayPathResponse(
+                    totalTime,
+                    transferCount,
+                    stationCount,
+                    totalFare,
+                    "00:00", // 출발 시간
+                    "00:00", // 도착 시간
+                    segments
+            );
+
         } catch (Exception e) {
-            return Mono.error(e);
+            throw new RuntimeException("경로 데이터 파싱 오류", e);
         }
     }
+
+    private record Coordinate(String x, String y) {}
 }

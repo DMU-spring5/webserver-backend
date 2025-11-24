@@ -1,9 +1,8 @@
 package com.websever.websever.controller;
 
-import com.websever.websever.dto.SubwayPathDto;
+import com.websever.websever.dto.SubwayPathResponse;
 import com.websever.websever.service.SubwayService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,28 +16,23 @@ public class SubwayController {
 
     private final SubwayService subwayService;
 
-    /**
-     * 지하철 경로 검색 API (로그인 필수)
-     * 1. 출발역, 도착역 이름을 받아서 ID로 변환
-     * 2. 변환된 ID로 경로 검색 수행
-     * 사용 예: GET /api/v1/transport/subway/path?start=서울역&end=강남&cityCode=1000
+    /*
+      지하철 경로 검색 API
+      @param region 지역 (수도권, 부산, 대구 등)
+      @param departure 출발역
+      @param arrival 도착역
+      @param time 출발 시간 (HHmm 형식, 예: 0830)
+      @param dayType 요일 구분 (WEEKDAY, SATURDAY, HOLIDAY)
+      @return 경로 상세 정보
      */
     @GetMapping("/path")
-    public Mono<ResponseEntity<SubwayPathDto>> searchPath(
-            @RequestParam String start,    // 출발역 이름 (예: 서울역)
-            @RequestParam String end,      // 도착역 이름 (예: 강남)
-            @RequestParam String cityCode  // 도시 코드 (수도권: 1000)
-    ) {
-        return subwayService.searchStationId(start, cityCode)
-                .flatMap(startId ->
-                        subwayService.searchStationId(end, cityCode)
-                                .flatMap(endId -> subwayService.searchSubwayPath(startId, endId, cityCode))
-                )
-                .map(ResponseEntity::ok)
-                .onErrorResume(e->{
-                    return Mono.just(ResponseEntity.badRequest().build());
+    public Mono<SubwayPathResponse> getSubwayPath(
+            @RequestParam String region,
+            @RequestParam String departure,
+            @RequestParam String arrival,
+            @RequestParam String time,
+            @RequestParam String dayType) {
 
-                });
-
+        return subwayService.searchSubwayPath(region, departure, arrival, time, dayType);
     }
 }
