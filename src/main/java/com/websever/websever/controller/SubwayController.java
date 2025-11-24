@@ -1,38 +1,44 @@
 package com.websever.websever.controller;
 
 import com.websever.websever.dto.SubwayPathDto;
-import com.websever.websever.service.TransportationService;
+import com.websever.websever.service.SubwayService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/subway")
+@RequestMapping("/api/v1/transport/subway")
 @RequiredArgsConstructor
 public class SubwayController {
 
-    private final TransportationService transportationService;
+    private final SubwayService subwayService;
 
-    // 호출 예시: http://localhost:9191/api/subway/path?cid=1000&sid=201&eid=222
+    /**
+     * 지하철 경로 검색 API (로그인 필수)
+     * 1. 출발역, 도착역 이름을 받아서 ID로 변환
+     * 2. 변환된 ID로 경로 검색 수행
+     * 사용 예: GET /api/v1/transport/subway/path?start=서울역&end=강남&cityCode=1000
+     */
     @GetMapping("/path")
-    public ResponseEntity<?> getSubwayPath(
-            @RequestParam String cid,
-            @RequestParam String sid,
-            @RequestParam String eid
+    public Mono<ResponseEntity<SubwayPathDto>> searchPath(
+            @RequestParam String start,    // 출발역 이름 (예: 서울역)
+            @RequestParam String end,      // 도착역 이름 (예: 강남)
+            @RequestParam String cityCode  // 도시 코드 (수도권: 1000)
     ) {
-        if (cid == null || sid == null || eid == null) {
-            return ResponseEntity.badRequest().body("필수 파라미터(cid, sid, eid)가 누락되었습니다.");
-        }
+        return subwayService.searchStationId(start, cityCode)
+                .flatMap(startId ->
+                        subwayService.searchStationId(end, cityCode)
+                                .flatMap(endId -> subwayService.searchSubwayPath(startId, endId, cityCode))
+                )
+                .map(ResponseEntity::ok)
+                .onErrorResume(e->{
+                    return Mono.just(ResponseEntity.badRequest().build());
 
-        SubwayPathDto result = transportationService.getSubwayPath(cid, sid, eid);
+                });
 
-        if (result == null || result.getResult() == null) {
-            return ResponseEntity.status(500).body("경로를 찾을 수 없거나 API 호출에 실패했습니다.");
-        }
-
-        return ResponseEntity.ok(result);
     }
 }
