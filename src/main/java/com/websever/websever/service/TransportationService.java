@@ -1,8 +1,8 @@
 package com.websever.websever.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.websever.websever.entity.DataCacheEntity;
 import com.websever.websever.repository.DataCacheRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class TransportationService {
     private final DataCacheRepository dataCacheRepository;
     private final ObjectMapper objectMapper;
 
-    @Value("${api.odsay.key}") // application.properties 키 이름 확인 필요
+    @Value("${api.odsay.key}")
     private String odsayApiKey;
 
     @Value("${naver.client.id}")
@@ -45,19 +45,16 @@ public class TransportationService {
     private final String odsayBaseUrl = "https://api.odsay.com/v1/api/searchPubTransPath";
 
     /**
-     * 1. 네이버 지오코딩 (장소 검색 -> 좌표 변환)
+     * 1. 네이버 지오코딩 (장소/주소 -> 좌표 변환)
      */
     public String searchLocationByQuery(String query) {
         if (query == null || query.isBlank()) {
             throw new IllegalArgumentException("query는 필수입니다.");
         }
 
-    public String searchLocationByQuery(String query) {
-        if (query == null || query.isBlank()) {
-            throw new IllegalArgumentException("query는 필수입니다.");
-        }
+        String cacheDataType = "NAVER_GEOCODE_" + query;
 
-        // 캐시 확인
+        // 1-1. 캐시 확인
         Optional<DataCacheEntity> cachedData = dataCacheRepository
                 .findFirstByDataTypeOrderByFetchedAtDesc(cacheDataType);
 
@@ -69,7 +66,7 @@ public class TransportationService {
             }
         }
 
-        // API 호출 헤더 설정
+        // 1-2. API 호출 헤더 설정
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-NCP-APIGW-API-KEY-ID", naverClientId);
         headers.set("X-NCP-APIGW-API-KEY", naverClientSecret);
@@ -92,7 +89,8 @@ public class TransportationService {
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 String responseBody = response.getBody();
-                // 정상 응답 시 DB에 캐시 저장
+
+                // 1-3. 정상 응답 시 DB에 캐시 저장
                 if (responseBody != null && !responseBody.isBlank()) {
                     Map<String, Object> jsonMap = objectMapper.readValue(responseBody, Map.class);
                     DataCacheEntity newCache = new DataCacheEntity();
@@ -112,7 +110,6 @@ public class TransportationService {
 
     /**
      * 2. ODsay 대중교통 길찾기 (좌표 기반)
-     * (아까 코드에서 이 메서드의 앞부분이 날아가고 뒷부분만 남아있어서 에러가 났던 것입니다.)
      */
     public String searchPubTransPath(double sx, double sy, double ex, double ey) {
         try {
@@ -124,7 +121,7 @@ public class TransportationService {
                     .queryParam("SY", sy)
                     .queryParam("EX", ex)
                     .queryParam("EY", ey)
-                    .queryParam("SearchPathType", 0) // 0: 모두
+                    .queryParam("SearchPathType", 0) // 0: 모두 (버스+지하철)
                     .build(true)
                     .toUri();
 
@@ -140,18 +137,19 @@ public class TransportationService {
 
     /**
      * 3. 통합 길찾기 (주소 텍스트 -> 좌표 변환 -> 길찾기)
+     * 예: "서울역" -> "강남역" 입력 시 경로 반환
      */
     public String getRouteByAddresses(String startAddress, String endAddress) {
-        // 1. 출발지 좌표 획득
+        // 출발지 좌표 획득
         Coordinate startCoord = getCoordinateFromAddress(startAddress);
-        // 2. 도착지 좌표 획득
+        // 도착지 좌표 획득
         Coordinate endCoord = getCoordinateFromAddress(endAddress);
 
-        // 3. 길찾기 실행
+        // 길찾기 실행
         return searchPubTransPath(startCoord.x, startCoord.y, endCoord.x, endCoord.y);
     }
 
-    // 내부 헬퍼 클래스 (Java 16+ Record)
+    // 내부 헬퍼 클래스 (좌표 저장용)
     private record Coordinate(double x, double y) {}
 
     // 주소 문자열을 받아 좌표(x, y)를 추출하는 내부 메서드
