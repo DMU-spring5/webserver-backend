@@ -52,7 +52,10 @@ public class TransportationService {
             throw new IllegalArgumentException("query는 필수입니다.");
         }
 
-        String cacheDataType = "NAVER_GEOCODE_" + query;
+    public String searchLocationByQuery(String query) {
+        if (query == null || query.isBlank()) {
+            throw new IllegalArgumentException("query는 필수입니다.");
+        }
 
         // 캐시 확인
         Optional<DataCacheEntity> cachedData = dataCacheRepository
