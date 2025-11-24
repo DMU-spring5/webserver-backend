@@ -2,10 +2,12 @@ package com.websever.websever.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.websever.websever.entity.DataCacheEntity;
 import com.websever.websever.repository.DataCacheRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,10 +18,13 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TransportationService {
@@ -28,6 +33,9 @@ public class TransportationService {
     private final DataCacheRepository dataCacheRepository;
     private final ObjectMapper objectMapper;
 
+    @Value("${odsay.api.key}")
+    private String odsayApiKey;
+
     @Value("${naver.client.id}")
     private String naverClientId;
 
@@ -35,6 +43,7 @@ public class TransportationService {
     private String naverClientSecret;
 
     private final String geocodingApiUrl = "https://maps.apigw.ntruss.com/map-geocode/v2/geocode";
+    private final String odsayBaseUrl = "https://api.odsay.com/v1/api/searchPubTransPath";
 
     public String searchLocationByQuery(String query) {
         if (query == null || query.isBlank()) {
@@ -106,6 +115,62 @@ public class TransportationService {
             throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+
+public String searchPubTransPath(double sx, double sy, double ex, double ey) {
+    try {
+        String encodedKey = URLEncoder.encode(odsayApiKey, StandardCharsets.UTF_8);
+
+        URI uri = UriComponentsBuilder.fromUriString(odsayBaseUrl)
+                .queryParam("apiKey", encodedKey)
+                .queryParam("SX", sx)
+                .queryParam("SY", sy)
+                .queryParam("EX", ex)
+                .queryParam("EY", ey)
+                .queryParam("SearchPathType", 0)
+                .build(true)
+                .toUri();
+        log.info("ODsay Path Request: {}", uri);
+
+        return restTemplate.getForObject(uri, String.class);
+
+    } catch (Exception e) {
+        log.error("ODsay 길찾기 호출 중 오류", e);
+        throw new RuntimeException("ODsay API 오류", e);
+    }
+}
+
+
+    public String getRouteByAddresses(String startAddress, String endAddress) {
+        // 1. 출발지 좌표 획득
+        Coordinate startCoord = getCoordinateFromAddress(startAddress);
+        // 2. 도착지 좌표 획득
+        Coordinate endCoord = getCoordinateFromAddress(endAddress);
+
+        // 3. 길찾기 실행
+        return searchPubTransPath(startCoord.x, startCoord.y, endCoord.x, endCoord.y);
+    }
+    private record Coordinate(double x, double y) {}
+
+    // 주소 문자열을 받아 좌표(x, y)를 추출하는 내부 메서드
+    private Coordinate getCoordinateFromAddress(String address) {
+        String jsonResult = searchLocationByQuery(address);
+        try {
+            JsonNode root = objectMapper.readTree(jsonResult);
+            JsonNode addresses = root.path("addresses");
+
+            if (addresses.isArray() && addresses.size() > 0) {
+                JsonNode firstResult = addresses.get(0);
+                double x = Double.parseDouble(firstResult.get("x").asText());
+                double y = Double.parseDouble(firstResult.get("y").asText());
+                return new Coordinate(x, y);
+            } else {
+                throw new RuntimeException("해당 주소의 좌표를 찾을 수 없습니다: " + address);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("좌표 변환 중 오류 발생: " + address, e);
         }
     }
 }

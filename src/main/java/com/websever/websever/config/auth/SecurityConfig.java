@@ -35,12 +35,11 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
                 // API 경로별 권한 설정
                 .authorizeHttpRequests(authorize -> authorize
                         // "/api/v1/com.websever.websever.controller.auth/"로 시작하는 모든 POST 요청은 인증 없이 허용
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/bus/**", "/api/v1/transport/**").permitAll()
+                        .requestMatchers( "/api/v1/transport/bus/**").permitAll()
                         // 나머지 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
