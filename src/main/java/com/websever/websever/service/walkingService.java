@@ -129,10 +129,9 @@ public class walkingService {
                 throw new IllegalStateException("Naver Geocoding 결과에 좌표가 없습니다: " + query);
             }
 
-            // 첫 번째 결과의 x(경도), y(위도) 추출
             Map<String, String> firstAddress = addresses.get(0);
-            double longitude = Double.parseDouble(firstAddress.get("x")); // 경도 (x)
-            double latitude = Double.parseDouble(firstAddress.get("y")); // 위도 (y)
+            double longitude = Double.parseDouble(firstAddress.get("x"));
+            double latitude = Double.parseDouble(firstAddress.get("y"));
 
             return new NaverGeocodingCoords(longitude, latitude);
 
@@ -141,20 +140,11 @@ public class walkingService {
         }
     }
 
-
-    // --- T Map 길찾기 핵심 로직 ---
-    /**
-     * 1. 출발지, 도착지 Geocoding (Naver)을 통해 좌표 획득
-     * 2. T Map 보행자 경로 API를 호출하여 경로 정보 획득
-     * @return T Map API의 경로 결과 JSON 문자열
-     */
     public String getWalkingRoute(String startAddress, String endAddress) {
 
-        // 1. 출발지/도착지 좌표 획득 (Naver Geocoding 2회 호출)
         NaverGeocodingCoords startCoords = getCoordsFromQuery(startAddress);
         NaverGeocodingCoords endCoords = getCoordsFromQuery(endAddress);
 
-        // 2. T Map API 요청 DTO 구성
         TmapRequest tmapRequest = new TmapRequest(
                 startCoords.longitude(),
                 startCoords.latitude(),
@@ -166,7 +156,6 @@ public class walkingService {
                 "WGS84GEO"
         );
 
-        // 3. T Map API 호출
         HttpHeaders headers = new HttpHeaders();
         headers.set("appKey", tmapAppKey);
         headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
@@ -175,16 +164,23 @@ public class walkingService {
         HttpEntity<TmapRequest> entity = new HttpEntity<>(tmapRequest, headers);
 
         try {
-            // T Map 보행자 경로 API는 POST 요청입니다.
             ResponseEntity<String> response = restTemplate.exchange(
                     tmapRouteApiUrl,
                     HttpMethod.POST,
                     entity,
-                    String.class // T Map 응답 전체를 String으로 받습니다.
+                    String.class
             );
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                return response.getBody(); // T Map 경로 탐색 결과 JSON 반환
+                String rawJson = response.getBody();
+
+                String prettyJson = objectMapper
+                        .writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(
+                                objectMapper.readValue(rawJson, Object.class)
+                        );
+
+                return prettyJson;
             } else {
                 // T Map 응답 오류 처리
                 throw new IllegalStateException("T Map API 비정상 응답: " + response.getStatusCode() + " - " + response.getBody());
@@ -192,6 +188,10 @@ public class walkingService {
 
         } catch (org.springframework.web.client.RestClientException ex) {
             throw new RuntimeException("T Map API 호출 중 오류 발생: " + ex.getMessage(), ex);
+        } catch (JsonMappingException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 }
