@@ -1,13 +1,14 @@
 package com.websever.websever.service.auth;
 
 import com.websever.websever.dto.response.LoginResponse;
-import com.websever.websever.dto.response.SignupResponse;
 import com.websever.websever.entity.auth.UserEntity;
 import com.websever.websever.repository.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -77,14 +78,25 @@ public class AuthService {
         return user.getUserId();
     }
 
-    // [비밀번호 찾기 - 검증]
-    @Transactional(readOnly = true)
-    public boolean verifyUserForPasswordReset(String nickname, String userId) {
+    // [비밀번호 찾기 - ]
+    @Transactional
+    public String resetAndRetrieveTempPassword(String nickname, String userId) {
         UserEntity user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
         if (!user.getNickname().equals(nickname)) {
             throw new IllegalArgumentException("닉네임 정보가 일치하지 않습니다.");
         }
-        return true;
+
+        // 1. 임의의 6자리 숫자 생성
+        SecureRandom random = new SecureRandom();
+        int tempPasswordInt = 100000 + random.nextInt(900000); // 100000 ~ 999999
+        String tempPassword = String.valueOf(tempPasswordInt); // 평문 임시 비밀번호
+
+        // 2. 임시 비밀번호를 해시하여 DB에 저장 (업데이트)
+        String hashedPassword = passwordEncoder.encode(tempPassword);
+        user.setPassword(hashedPassword);
+
+
+        return tempPassword;
     }
 }

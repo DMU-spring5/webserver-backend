@@ -48,13 +48,16 @@ public class AuthController {
         return ResponseEntity.ok(successMessage);
     }
 
-    // [비밀번호 찾기 - 검증]
+    // [비밀번호 찾기 - 임시 비밀번호 발급]
     @PostMapping("/find-password")
     public ResponseEntity<String> findPassword(@RequestBody FindPasswordRequest findPasswordRequest) {
-        authService.verifyUserForPasswordReset(
+        // 임시 비밀번호를 생성하고 DB를 업데이트한 후, 평문 임시 비밀번호를 반환
+        String tempPassword = authService.resetAndRetrieveTempPassword(
                 findPasswordRequest.getNickname(),
                 findPasswordRequest.getUserId()
         );
-        return ResponseEntity.ok("사용자 정보가 확인되었습니다. (비밀번호 재설정 단계로 이동)");
+
+        String responseMessage = "새로 발급받은 비밀번호는 " + tempPassword + " 입니다.";
+        return ResponseEntity.ok(responseMessage);
     }
 }
