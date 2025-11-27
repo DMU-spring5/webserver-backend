@@ -1,6 +1,6 @@
-package com.websever.websever.service;
+package com.websever.websever.service.map.bus;
 
-import com.websever.websever.dto.BusRouteInfoResponse;
+import com.websever.websever.dto.response.BusRouteInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

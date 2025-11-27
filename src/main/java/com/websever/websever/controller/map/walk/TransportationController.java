@@ -1,7 +1,7 @@
-package com.websever.websever.controller;
+package com.websever.websever.controller.map.walk;
 
 import com.websever.websever.service.TransportationService;
-import com.websever.websever.service.walkingService;
+import com.websever.websever.service.map.walk.walkingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

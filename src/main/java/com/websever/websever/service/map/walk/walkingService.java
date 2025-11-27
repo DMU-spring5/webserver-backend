@@ -1,4 +1,4 @@
-package com.websever.websever.service;
+package com.websever.websever.service.map.walk;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;

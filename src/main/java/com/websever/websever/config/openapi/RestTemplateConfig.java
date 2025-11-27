@@ -1,4 +1,4 @@
-package com.websever.websever.config;
+package com.websever.websever.config.openapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule; // 👈 import 추가
