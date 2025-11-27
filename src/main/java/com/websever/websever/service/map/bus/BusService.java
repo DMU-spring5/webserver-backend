@@ -1,4 +1,4 @@
-package com.websever.websever.service;
+package com.websever.websever.service.map.bus;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

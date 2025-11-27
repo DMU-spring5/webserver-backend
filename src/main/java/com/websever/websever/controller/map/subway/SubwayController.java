@@ -1,7 +1,7 @@
-package com.websever.websever.controller;
+package com.websever.websever.controller.map.subway;
 
-import com.websever.websever.dto.SubwayPathResponse;
-import com.websever.websever.service.SubwayService;
+import com.websever.websever.dto.response.SubwayPathResponse;
+import com.websever.websever.service.map.subway.SubwayService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

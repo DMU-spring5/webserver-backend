@@ -1,7 +1,7 @@
-package com.websever.websever.controller;
+package com.websever.websever.controller.map.bus;
 
 import com.websever.websever.dto.BusStationDto;
-import com.websever.websever.service.BusStationService;
+import com.websever.websever.service.map.bus.BusStationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

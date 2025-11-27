@@ -1,8 +1,8 @@
-package com.websever.websever.service;
+package com.websever.websever.service.map.subway;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.websever.websever.dto.SubwayPathResponse;
+import com.websever.websever.dto.response.SubwayPathResponse;
 import com.websever.websever.exception.StationNotFoundException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

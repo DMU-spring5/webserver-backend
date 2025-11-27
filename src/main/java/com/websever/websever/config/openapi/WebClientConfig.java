@@ -1,4 +1,4 @@
-package com.websever.websever.config;
+package com.websever.websever.config.openapi;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
