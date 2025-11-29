@@ -29,7 +29,7 @@ public class CommunityService {
         newPost.setContent(request.getContent());
 
         newPost.setUsers_id(userEntity);
-        postEntity savePost = communityRepository.save(newPost); // DB 저장 후 ID가 채워진 객체
+        postEntity savePost = communityRepository.save(newPost);
 
         return CommunityResponse.create(savePost);
     }
@@ -72,7 +72,6 @@ public class CommunityService {
         postEntity post = communityRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다. ID: " + postId));
 
-        // 💡 권한 검증
         if (!post.getUsers_id().getUserId().equals(currentUserId)) {
             throw new IllegalStateException("삭제 권한이 없습니다.");
         }
