@@ -1,6 +1,8 @@
 package com.websever.websever.config.auth;
 
 import com.websever.websever.service.auth.JwtTokenProvider;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,11 +28,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = jwtTokenProvider.resolveToken(request);
 
         // 2. 토큰 유효성 검증
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            // 3. 토큰이 유효하면 인증 정보를 가져옴
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
-            // 4. SecurityContext에 인증 정보를 저장
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (token != null){
+            try{
+                if(jwtTokenProvider.validateToken(token)) {
+                    // 3. 토큰이 유효하면 인증 정보를 가져옴
+                    Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                    // 4. SecurityContext에 인증 정보를 저장
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+                } catch(ExpiredJwtException e){
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("JWT Token Expired.");
+                return;
+
+            } catch (JwtException | IllegalArgumentException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid JWT Token.");
+            return;
+        }
         }
 
         filterChain.doFilter(request, response);
