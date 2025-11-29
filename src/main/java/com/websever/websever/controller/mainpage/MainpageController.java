@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/mainpage")
-@RequiredArgsConstructor // 생성자 코드를 대체
+@RequiredArgsConstructor
 public class MainpageController {
 
     private final UserService userService;
@@ -31,10 +31,8 @@ public class MainpageController {
 
         ServiceType branchType = userInfo.getServiceType();
 
-        // 5. 군 복무 진행 정보 계산
         MilitaryDto progressDto = militaryService.calculateProgress(currentUsername, branchType);
 
-        // 6. UserResponse에 계산 결과 설정
         userInfo.setMilitaryProgress(progressDto);
 
         return ResponseEntity.ok(userInfo);
