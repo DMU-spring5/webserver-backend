@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/**").permitAll()
                         .requestMatchers("/api/v1/transport/**").authenticated()
+                        .requestMatchers("/api/v1/mainpage/**").authenticated()
 
 
 
