@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/transport/**").authenticated()
                         .requestMatchers("/api/v1/mainpage/**").authenticated()
                                 .requestMatchers("/api/v1/health/**").authenticated()
+                        .requestMatchers("/api/v1/mypage/**").authenticated()
 
 
 
