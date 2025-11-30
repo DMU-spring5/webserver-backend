@@ -1,5 +1,6 @@
 package com.websever.websever.service.health;
 
+import com.websever.websever.dto.response.ExerciseCalculateResponse;
 import com.websever.websever.dto.response.ExerciseResponse;
 import com.websever.websever.entity.health.ExerciseEntity;
 import com.websever.websever.repository.health.ExerciseRepository;
@@ -54,5 +55,26 @@ public class ExerciseService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 운동을 찾을 수 없습니다. ID: " + exerciseId));
 
         return ExerciseResponse.from(exercise);
+    }
+
+    /**
+     * 운동 예상 소모 칼로리 계산 (PPT 57p)
+     * @param exerciseId 운동 ID
+     * @param durationMin 운동 시간 (분)
+     */
+    @Transactional(readOnly = true)
+    public ExerciseCalculateResponse calculateCalories(Integer exerciseId, Integer durationMin) {
+        ExerciseEntity exercise = exerciseRepository.findById(exerciseId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 운동을 찾을 수 없습니다. ID: " + exerciseId));
+
+        // 칼로리 계산 공식: 1분당 칼로리 * 시간(분)
+        // (DB의 calories가 1분당 소모 칼로리라고 가정)
+        int totalCalories = exercise.getCalories() * durationMin;
+
+        return ExerciseCalculateResponse.builder()
+                .exerciseName(exercise.getName())
+                .durationMin(durationMin)
+                .burnedCalories(totalCalories)
+                .build();
     }
 }

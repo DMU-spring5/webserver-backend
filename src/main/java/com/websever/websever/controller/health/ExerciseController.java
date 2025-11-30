@@ -1,5 +1,6 @@
 package com.websever.websever.controller.health;
 
+import com.websever.websever.dto.response.ExerciseCalculateResponse;
 import com.websever.websever.dto.response.ExerciseResponse;
 import com.websever.websever.service.health.ExerciseService;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,19 @@ public class ExerciseController {
     @GetMapping("/{exerciseId}")
     public ResponseEntity<ExerciseResponse> getExerciseDetail(@PathVariable Integer exerciseId) {
         ExerciseResponse response = exerciseService.getExerciseDetail(exerciseId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 운동 예상 소모 칼로리 조회 API (PPT 57p)
+     * GET /api/v1/health/exercise/calculate?exerciseId=1&duration=30
+     */
+    @GetMapping("/calculate")
+    public ResponseEntity<ExerciseCalculateResponse> calculateExerciseCalories(
+            @RequestParam Integer exerciseId,
+            @RequestParam Integer duration
+    ) {
+        ExerciseCalculateResponse response = exerciseService.calculateCalories(exerciseId, duration);
         return ResponseEntity.ok(response);
     }
 }
