@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/community/**").permitAll()
+
                                 .requestMatchers(HttpMethod.POST, "/api/v1/community/create").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "/api/v1/community/**").authenticated()
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/community/**").authenticated()
@@ -50,7 +51,7 @@ public class SecurityConfig {
 
 
                         // 나머지 모든 요청은 인증 필요
-                        //.anyRequest().authenticated()
+                        .anyRequest().authenticated()
                 )
 
                 .addFilterBefore(
