@@ -1,0 +1,62 @@
+package com.websever.websever.service.mypage;
+
+import com.websever.websever.dto.request.ChangePasswordRequest;
+import com.websever.websever.dto.response.MyCommentResponse;
+import com.websever.websever.entity.auth.UserEntity;
+import com.websever.websever.entity.community.CommentEntity;
+import com.websever.websever.repository.Community.CommentRepository;
+import com.websever.websever.repository.auth.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class MyPageService {
+
+    private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    /**
+     * 비밀번호 변경
+     */
+    @Transactional
+    public void changePassword(String userId, ChangePasswordRequest request) {
+        UserEntity user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 1. 기존 비밀번호 확인
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("기존 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 2. 새 비밀번호 유효성 검사 (필요 시 추가 로직 구현)
+        // 예: if (request.getNewPassword().length() < 8) ...
+
+        // 3. 새 비밀번호 암호화 및 저장
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        // @Transactional 안에서는 save 호출 없이도 더티 체킹으로 업데이트되지만, 명시적으로 호출해도 무방합니다.
+    }
+
+    /**
+     * 내가 쓴 댓글(과 게시글) 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<MyCommentResponse> getMyComments(String userId) {
+        UserEntity user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 댓글 조회
+        List<CommentEntity> comments = commentRepository.findByUsersIdOrderByCreatedAtDesc(user);
+
+        // DTO 변환
+        return comments.stream()
+                .map(MyCommentResponse::from)
+                .collect(Collectors.toList());
+    }
+}
