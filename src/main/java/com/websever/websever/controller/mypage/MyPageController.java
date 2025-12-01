@@ -1,6 +1,7 @@
 package com.websever.websever.controller.mypage;
 
 import com.websever.websever.dto.request.ChangePasswordRequest;
+import com.websever.websever.dto.response.MyCommentDetailResponse;
 import com.websever.websever.dto.response.MyCommentResponse;
 import com.websever.websever.service.mypage.MyPageService;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +42,13 @@ public class MyPageController {
     ) {
         List<MyCommentResponse> responses = myPageService.getMyComments(userDetails.getUsername());
         return ResponseEntity.ok(responses);
+    }
+    @GetMapping("/comments/{commentId}")
+    public ResponseEntity<MyCommentDetailResponse> getMyCommentDetail(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Integer commentId
+    ) {
+        MyCommentDetailResponse response = myPageService.getMyCommentDetail(userDetails.getUsername(), commentId);
+        return ResponseEntity.ok(response);
     }
 }

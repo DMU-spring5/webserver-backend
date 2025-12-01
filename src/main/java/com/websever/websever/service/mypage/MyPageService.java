@@ -1,6 +1,7 @@
 package com.websever.websever.service.mypage;
 
 import com.websever.websever.dto.request.ChangePasswordRequest;
+import com.websever.websever.dto.response.MyCommentDetailResponse;
 import com.websever.websever.dto.response.MyCommentResponse;
 import com.websever.websever.entity.auth.UserEntity;
 import com.websever.websever.entity.community.CommentEntity;
@@ -58,5 +59,18 @@ public class MyPageService {
         return comments.stream()
                 .map(MyCommentResponse::from)
                 .collect(Collectors.toList());
+    }
+    @Transactional(readOnly = true)
+    public MyCommentDetailResponse getMyCommentDetail(String userId, Integer commentId) {
+        // 1. 댓글 조회
+        CommentEntity comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 댓글을 찾을 수 없습니다. ID: " + commentId));
+
+        // 2. 권한 검증 (내 댓글인지 확인)
+        if (!comment.getUsersId().getUserId().equals(userId)) {
+            throw new IllegalStateException("본인이 작성한 댓글만 조회할 수 있습니다.");
+        }
+
+        return MyCommentDetailResponse.from(comment);
     }
 }
