@@ -3,6 +3,7 @@ package com.websever.websever.controller.mypage;
 import com.websever.websever.dto.request.ChangePasswordRequest;
 import com.websever.websever.dto.response.MyCommentDetailResponse;
 import com.websever.websever.dto.response.MyCommentResponse;
+import com.websever.websever.dto.response.MyLikedPostResponse;
 import com.websever.websever.service.mypage.MyPageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -50,5 +51,13 @@ public class MyPageController {
     ) {
         MyCommentDetailResponse response = myPageService.getMyCommentDetail(userDetails.getUsername(), commentId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/likes")
+    public ResponseEntity<List<MyLikedPostResponse>> getMyLikedPosts(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        List<MyLikedPostResponse> responses = myPageService.getMyLikedPosts(userDetails.getUsername());
+        return ResponseEntity.ok(responses);
     }
 }

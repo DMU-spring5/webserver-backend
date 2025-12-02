@@ -3,9 +3,13 @@ package com.websever.websever.service.mypage;
 import com.websever.websever.dto.request.ChangePasswordRequest;
 import com.websever.websever.dto.response.MyCommentDetailResponse;
 import com.websever.websever.dto.response.MyCommentResponse;
+import com.websever.websever.dto.response.MyLikedPostResponse;
 import com.websever.websever.entity.auth.UserEntity;
 import com.websever.websever.entity.community.CommentEntity;
+import com.websever.websever.entity.community.LikeEntity;
+import com.websever.websever.entity.community.postEntity;
 import com.websever.websever.repository.Community.CommentRepository;
+import com.websever.websever.repository.Community.LikeRepository;
 import com.websever.websever.repository.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +26,7 @@ public class MyPageService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final LikeRepository likeRepository;
     /**
      * 비밀번호 변경
      */
@@ -72,5 +76,24 @@ public class MyPageService {
         }
 
         return MyCommentDetailResponse.from(comment);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MyLikedPostResponse> getMyLikedPosts(String userId) {
+        UserEntity user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 1. 유저가 좋아요 누른 내역 조회
+        List<LikeEntity> likes = likeRepository.findByUserOrderByCreatedAtDesc(user);
+
+        // 2. DTO로 변환
+        return likes.stream()
+                .map(like -> {
+                    postEntity post = like.getPost();
+                    // 해당 게시글의 총 좋아요 수 조회
+                    Integer count = likeRepository.countByPost(post);
+                    return MyLikedPostResponse.of(post, count);
+                })
+                .collect(Collectors.toList());
     }
 }
