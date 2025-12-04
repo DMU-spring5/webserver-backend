@@ -7,11 +7,9 @@ import com.websever.websever.dto.response.LoginResponse;
 import com.websever.websever.entity.auth.UserEntity;
 import com.websever.websever.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -59,5 +57,21 @@ public class AuthController {
 
         String responseMessage = "새로 발급받은 비밀번호는 " + tempPassword + " 입니다.";
         return ResponseEntity.ok(responseMessage);
+    }
+
+    /**
+     * 아이디 중복 확인 API
+     * GET /api/v1/auth/check-id?userId=입력한아이디
+     */
+    @GetMapping("/check-id")
+    public ResponseEntity<String> checkIdDuplicate(@RequestParam String userId) {
+        boolean isDuplicate = authService.checkIdDuplicate(userId);
+
+        if (isDuplicate) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("이미 존재하는 아이디입니다.");
+        } else {
+            return ResponseEntity.ok("사용 가능한 아이디입니다.");
+        }
     }
 }
