@@ -3,12 +3,14 @@ package com.websever.websever.service.mypage;
 import com.websever.websever.dto.request.ChangePasswordRequest;
 import com.websever.websever.dto.response.MyCommentDetailResponse;
 import com.websever.websever.dto.response.MyCommentResponse;
+import com.websever.websever.dto.response.MyLikedPostDetailResponse;
 import com.websever.websever.dto.response.MyLikedPostResponse;
 import com.websever.websever.entity.auth.UserEntity;
 import com.websever.websever.entity.community.CommentEntity;
 import com.websever.websever.entity.community.LikeEntity;
 import com.websever.websever.entity.community.postEntity;
 import com.websever.websever.repository.Community.CommentRepository;
+import com.websever.websever.repository.Community.CommunityRepository;
 import com.websever.websever.repository.Community.LikeRepository;
 import com.websever.websever.repository.auth.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,8 @@ public class MyPageService {
     private final CommentRepository commentRepository;
     private final PasswordEncoder passwordEncoder;
     private final LikeRepository likeRepository;
+    private final CommunityRepository communityRepository;
+
     /**
      * 비밀번호 변경
      */
@@ -95,5 +99,20 @@ public class MyPageService {
                     return MyLikedPostResponse.of(post, count);
                 })
                 .collect(Collectors.toList());
+    }
+    @Transactional(readOnly = true)
+    public MyLikedPostDetailResponse getMyLikedPostDetail(String userId, Integer postId) {
+        // 1. 사용자 조회
+        UserEntity user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 2. 게시글 조회
+        postEntity post = communityRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글을 찾을 수 없습니다. ID: " + postId));
+
+        // 4. 해당 게시글의 총 좋아요 수 계산
+        Integer likeCount = likeRepository.countByPost(post);
+
+        return MyLikedPostDetailResponse.of(post, likeCount);
     }
 }

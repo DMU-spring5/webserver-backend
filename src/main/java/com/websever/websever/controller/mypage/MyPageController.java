@@ -3,6 +3,7 @@ package com.websever.websever.controller.mypage;
 import com.websever.websever.dto.request.ChangePasswordRequest;
 import com.websever.websever.dto.response.MyCommentDetailResponse;
 import com.websever.websever.dto.response.MyCommentResponse;
+import com.websever.websever.dto.response.MyLikedPostDetailResponse;
 import com.websever.websever.dto.response.MyLikedPostResponse;
 import com.websever.websever.service.mypage.MyPageService;
 import lombok.RequiredArgsConstructor;
@@ -59,5 +60,13 @@ public class MyPageController {
     ) {
         List<MyLikedPostResponse> responses = myPageService.getMyLikedPosts(userDetails.getUsername());
         return ResponseEntity.ok(responses);
+    }
+    @GetMapping("/likes/{postId}")
+    public ResponseEntity<MyLikedPostDetailResponse> getMyLikedPostDetail(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Integer postId
+    ) {
+        MyLikedPostDetailResponse response = myPageService.getMyLikedPostDetail(userDetails.getUsername(), postId);
+        return ResponseEntity.ok(response);
     }
 }
