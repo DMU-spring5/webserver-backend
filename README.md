@@ -22,7 +22,7 @@ webserver_backend/
 │       │               ├── service         # 비즈니스 로직 처리
 │       │               │   └── basicService
 │       │               ├── WebSeverApplication
-│       │               └── config         # render 전용 ping 던지기
+│       │               └── com.websever.websever.com.websever.websever.config         # render 전용 ping 던지기
 │       │                   └── KeepAlive
 │       └── resources
 │           └── application.properties
@@ -42,7 +42,7 @@ webserver_backend/
 ### 기본 실행
 git clone 이후 > 터미널 내에서 ./gradlew build 진행 후 실행 <br>
 baseUrl은 https://webserver-backend.onrender.com이며, api에 대한 기본틀은 /api/v1/임 <br>
-ex) /api/v1/auth/{userId} <br>
+ex) /api/v1/com.websever.websever.controller.auth/{userId} <br>
 
 ## 참고 사항
 ./gradlew build 진행 후 생기는 .grable 같은 패키지는 지극히 정상이며, 오히려 패키지 생성이 안 되어 있을 시 에러가 나니 참고 <br>
