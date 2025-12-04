@@ -99,4 +99,10 @@ public class AuthService {
 
         return tempPassword;
     }
+
+    //  아이디 중복 확인 메서드
+    @Transactional(readOnly = true)
+    public boolean checkIdDuplicate(String userId) {
+        return userRepository.existsByUserId(userId);
+    }
 }
