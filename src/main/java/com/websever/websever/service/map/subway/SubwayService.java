@@ -121,6 +121,7 @@ public class SubwayService {
                     .uri(uri)
                     .retrieve()
                     .bodyToMono(String.class)
+                    .doOnNext(response -> System.out.println("ODsay 경로 응답 (Raw): " + response)) // 👈 이 줄을 추가합니다.
                     .map(this::parseOdsayResponse);
         } catch (Exception e) {
             return Mono.error(e);

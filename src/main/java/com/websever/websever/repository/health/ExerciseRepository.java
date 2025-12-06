@@ -17,4 +17,6 @@ public interface ExerciseRepository extends JpaRepository<ExerciseEntity, Intege
 
     // 3. 전체 운동 조회
     List<ExerciseEntity> findAllByOrderByNameAsc();
+
+    List<ExerciseEntity> findByNameContainingIgnoreCase(String name);
 }
