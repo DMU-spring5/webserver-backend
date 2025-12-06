@@ -1,5 +1,6 @@
 package com.websever.websever.controller.health;
 
+import com.websever.websever.dto.request.ExerciseCalculateRequest;
 import com.websever.websever.dto.response.ExerciseCalculateResponse;
 import com.websever.websever.dto.response.ExerciseResponse;
 import com.websever.websever.service.health.ExerciseService;
@@ -23,9 +24,11 @@ public class ExerciseController {
     @GetMapping
     public ResponseEntity<List<ExerciseResponse>> getExercises(
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) String tool
+            @RequestParam(required = false) String tool,
+            @RequestParam(required = false) String name // [신규] 검색어 파라미터 추가
     ) {
-        List<ExerciseResponse> responses = exerciseService.getExercisesByCategoryAndTool(category, tool);
+        // 서비스 메서드 시그니처 변경: name 파라미터 전달
+        List<ExerciseResponse> responses = exerciseService.getExercises(category, tool, name);
         return ResponseEntity.ok(responses);
     }
 
@@ -39,16 +42,11 @@ public class ExerciseController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 운동 예상 소모 칼로리 조회 API (PPT 57p)
-     * GET /api/v1/health/exercise/calculate?exerciseId=1&duration=30
-     */
-    @GetMapping("/calculate")
-    public ResponseEntity<ExerciseCalculateResponse> calculateExerciseCalories(
-            @RequestParam Integer exerciseId,
-            @RequestParam Integer duration
+    @PostMapping("/calculate/detail")
+    public ResponseEntity<ExerciseCalculateResponse> calculateExerciseCaloriesDetail(
+            @RequestBody ExerciseCalculateRequest request
     ) {
-        ExerciseCalculateResponse response = exerciseService.calculateCalories(exerciseId, duration);
+        ExerciseCalculateResponse response = exerciseService.calculateCaloriesDetail(request);
         return ResponseEntity.ok(response);
     }
 }

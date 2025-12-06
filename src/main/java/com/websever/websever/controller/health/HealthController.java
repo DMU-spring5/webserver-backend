@@ -1,5 +1,7 @@
 package com.websever.websever.controller.health;
 
+import com.websever.websever.dto.health.CalorieCalculatorDto;
+import com.websever.websever.dto.health.HealthGoalResponse;
 import com.websever.websever.dto.request.HealthRecordRequest;
 import com.websever.websever.dto.response.ExerciseCalculateResponse;
 import com.websever.websever.service.health.HealthService;
@@ -8,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/health")
@@ -36,6 +35,30 @@ public class HealthController {
         // 서비스 호출 (저장 및 계산 결과 반환)
         ExerciseCalculateResponse response = healthService.recordExercise(currentUserId, request);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/calculator")
+    public ResponseEntity<CalorieCalculatorDto.Response> calculatePlan(
+            @AuthenticationPrincipal UserDetails userDetails, // 추가
+            @RequestBody CalorieCalculatorDto.Request request
+    ) {
+        String currentUserId = userDetails.getUsername();
+        // userId를 서비스 메서드에 전달
+        CalorieCalculatorDto.Response response = healthService.calculatePlan(currentUserId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * [신규] 사용자 목표 상세 정보 조회 API (PPT 12p)
+     * GET /api/v1/health/goal
+     */
+    @GetMapping("/goal")
+    public ResponseEntity<HealthGoalResponse> getHealthGoal(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        String currentUserId = userDetails.getUsername();
+        HealthGoalResponse response = healthService.getLatestGoal(currentUserId);
         return ResponseEntity.ok(response);
     }
 }
