@@ -38,14 +38,14 @@ public class HealthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/calculator")
-    public ResponseEntity<CalorieCalculatorDto.Response> calculatePlan(
-            @AuthenticationPrincipal UserDetails userDetails, // 추가
+    @PostMapping("/goal")
+    public ResponseEntity<HealthGoalResponse> saveHealthGoal(
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody CalorieCalculatorDto.Request request
     ) {
         String currentUserId = userDetails.getUsername();
-        // userId를 서비스 메서드에 전달
-        CalorieCalculatorDto.Response response = healthService.calculatePlan(currentUserId, request);
+        // 서비스 메서드 이름 변경 (calculatePlan -> saveGoal) 및 리턴 타입 통일
+        HealthGoalResponse response = healthService.saveGoal(currentUserId, request);
         return ResponseEntity.ok(response);
     }
 

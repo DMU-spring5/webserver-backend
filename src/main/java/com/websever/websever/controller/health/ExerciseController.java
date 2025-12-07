@@ -18,22 +18,21 @@ public class ExerciseController {
     private final ExerciseService exerciseService;
 
     /**
-     * 운동 카테고리 및 도구별 조회 API (PPT 49p ~ 55p)
-     * GET /api/v1/health/exercise?category=가슴&tool=덤벨
+     * [최종 수정] 운동 목록 조회 및 검색 API
+     * 1. GET /api/v1/health/exercise?name=스쿼트 -> 검색 (name 파라미터만 허용)
+     * 2. GET /api/v1/health/exercise -> 전체 조회 (name 파라미터 생략)
      */
     @GetMapping
     public ResponseEntity<List<ExerciseResponse>> getExercises(
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String tool,
-            @RequestParam(required = false) String name // [신규] 검색어 파라미터 추가
+            @RequestParam(required = false) String name // name 파라미터만 허용하도록 명시
     ) {
-        // 서비스 메서드 시그니처 변경: name 파라미터 전달
-        List<ExerciseResponse> responses = exerciseService.getExercises(category, tool, name);
+        // Service에는 name만 전달
+        List<ExerciseResponse> responses = exerciseService.getExercises(name);
         return ResponseEntity.ok(responses);
     }
 
     /**
-     * 운동 상세 정보 조회 API (PPT 56p)
+     * 운동 상세 정보 조회 API
      * GET /api/v1/health/exercise/{exerciseId}
      */
     @GetMapping("/{exerciseId}")

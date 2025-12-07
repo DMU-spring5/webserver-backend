@@ -28,35 +28,29 @@ public class HealthService {
     private final HealthGoalRepository healthGoalRepository;
 
     /**
-     * 칼로리 계산 및 운동 기록 저장 (차별화된 기능)
-     * POST 요청 시 계산 결과를 DB에 영구 저장합니다.
+     * 칼로리 계산 및 운동 기록 저장
      */
     @Transactional
     public ExerciseCalculateResponse recordExercise(String userId, HealthRecordRequest request) {
-        // 1. 사용자 조회
         UserEntity user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        // 2. 운동 정보 조회
         ExerciseEntity exercise = exerciseRepository.findById(request.getExerciseId())
                 .orElseThrow(() -> new IllegalArgumentException("운동 정보를 찾을 수 없습니다."));
 
-        // 3. 칼로리 계산
         int baseCalories = (exercise.getCalories() != null) ? exercise.getCalories() : 0;
         int totalCalories = baseCalories * request.getDurationMin();
 
-        // 4. DB에 저장 (이 부분이 차별점!)
         HealthEntity healthEntity = HealthEntity.builder()
                 .user(user)
                 .exercise(exercise)
                 .durationMin(request.getDurationMin())
                 .totalCalories(totalCalories)
-                .date(LocalDate.now()) // 오늘 날짜로 기록
+                .date(LocalDate.now())
                 .build();
 
         healthRepository.save(healthEntity);
 
-        // 5. 결과 반환 (화면에 보여줄 데이터)
         return ExerciseCalculateResponse.builder()
                 .exerciseName(exercise.getName())
                 .durationMin(request.getDurationMin())
@@ -65,34 +59,28 @@ public class HealthService {
     }
 
     /**
-     * [수정] 칼로리 계산기 로직 (계산 + DB 저장)
+     * [수정] 목표 설정 및 저장 (기존 calculatePlan 대체)
+     * 이 메서드가 없어서 Controller에서 오류가 났었습니다.
      */
     @Transactional
-    public CalorieCalculatorDto.Response calculatePlan(String userId, CalorieCalculatorDto.Request request) {
+    public HealthGoalResponse saveGoal(String userId, CalorieCalculatorDto.Request request) {
         UserEntity user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        // 1. BMR, TDEE 계산 (Mifflin-St Jeor 공식)
+        // 1. BMR, TDEE 계산
         double bmr = (10 * request.getCurrentWeight()) + (6.25 * request.getHeight()) - (5 * request.getAge()) + 5;
         double activityMultiplier = getActivityMultiplier(request.getActivityLevel());
         double tdee = bmr * activityMultiplier;
 
-        // 2. 목표 달성 정보 계산
+        // 2. 하루 권장 칼로리 계산 (다이어트 목표 시 -500kcal)
         double dailyDeficit = 500.0;
         double recommendedDailyBurn = tdee + dailyDeficit;
 
-        double weightDiff = request.getCurrentWeight() - request.getTargetWeight();
-        int estimatedWeeks = 0;
-        if (weightDiff > 0) {
-            estimatedWeeks = Math.max(1, (int) ((weightDiff * 7700) / dailyDeficit) / 7);
-        } else {
-            recommendedDailyBurn = tdee; // 유지 또는 증량 목표 시 기본 유지 칼로리
-        }
-
+        // 3. 목표 Entity 조회 혹은 생성
         HealthGoalEntity goalEntity = healthGoalRepository.findTopByUserOrderByCreatedAtDesc(user)
                 .orElse(new HealthGoalEntity());
 
-        // 4. 객체에 요청 데이터 및 계산 결과 설정
+        // 4. 데이터 업데이트 및 저장
         goalEntity.setUser(user);
         goalEntity.setAge(request.getAge());
         goalEntity.setHeight(request.getHeight());
@@ -105,14 +93,18 @@ public class HealthService {
 
         healthGoalRepository.save(goalEntity);
 
-        return CalorieCalculatorDto.Response.builder()
+        // 5. 결과 반환
+        return HealthGoalResponse.builder()
+                .age(request.getAge())
+                .height(request.getHeight())
+                .activityLevel(request.getActivityLevel())
+                .currentWeight(request.getCurrentWeight())
+                .targetWeight(request.getTargetWeight())
                 .bmr(Math.round(bmr * 100.0) / 100.0)
                 .tdee(Math.round(tdee * 100.0) / 100.0)
-                .recommendedDailyBurn(Math.round(recommendedDailyBurn * 100.0) / 100.0)
-                .estimatedWeeks(estimatedWeeks)
+                .targetCalories(Math.round(recommendedDailyBurn * 100.0) / 100.0)
                 .build();
     }
-
 
     /**
      * [신규] 사용자의 가장 최근 목표 상세 정보 조회
@@ -122,7 +114,6 @@ public class HealthService {
         UserEntity user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        // 가장 최근에 저장된 목표 정보를 가져옴
         HealthGoalEntity goal = healthGoalRepository.findTopByUserOrderByCreatedAtDesc(user)
                 .orElseThrow(() -> new IllegalArgumentException("설정된 목표 정보가 없습니다."));
 
@@ -138,13 +129,14 @@ public class HealthService {
                 .build();
     }
 
+    // 활동량에 따른 승수 계산 헬퍼 메서드
     private double getActivityMultiplier(String level) {
         switch (level) {
-            case "VERY_LOW": return 1.2;      // 운동 거의 안함
-            case "LOW": return 1.375;         // 주 1-3회
-            case "NORMAL": return 1.55;       // 주 3-5회
-            case "HIGH": return 1.725;        // 주 6-7회
-            case "VERY_HIGH": return 1.9;     // 매일 격렬한 운동/육체노동
+            case "VERY_LOW": return 1.2;
+            case "LOW": return 1.375;
+            case "NORMAL": return 1.55;
+            case "HIGH": return 1.725;
+            case "VERY_HIGH": return 1.9;
             default: return 1.2;
         }
     }

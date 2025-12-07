@@ -22,27 +22,20 @@ public class ExerciseService {
      * 운동 카테고리 및 도구별 목록 조회 (PPT 49p ~ 55p)
      */
     @Transactional(readOnly = true)
-    public List<ExerciseResponse> getExercises(String category, String tool, String name) {
+    public List<ExerciseResponse> getExercises(String name) { // category, tool 제거
 
         List<ExerciseEntity> exercises;
 
-        // 검색어가 있는 경우: 검색어 우선으로 조회하기
+        // 검색어가 있는 경우: 검색어 우선으로 조회하기 (name만 처리)
         if (name != null && !name.isBlank()) {
-            //이름에 검색어가 포함된 모든 운동 조회
-            exercises= exerciseRepository.findByNameContainingIgnoreCase(name);
+            // 이름에 검색어가 포함된 모든 운동 조회
+            exercises = exerciseRepository.findByNameContainingIgnoreCase(name);
         }
-        else if (category != null && !category.isBlank()) {
-            if(tool == null || tool.equalsIgnoreCase("전체") || tool.isBlank()) {
-                exercises= exerciseRepository.findByCategory(category);
-            }
-            //카테고리와 도구를 모두 지정한 경우
-            else {
-                exercises= exerciseRepository.findByCategoryAndTool(category, tool);
-            }
-        }
+        // 검색어가 없는 경우: 전체 조회
         else {
-            exercises= exerciseRepository.findAllByOrderByNameAsc();
+            exercises = exerciseRepository.findAllByOrderByNameAsc();
         }
+        // 기존의 category, tool 필터링 로직 제거
 
         return exercises.stream()
                 .map(ExerciseResponse::from)
