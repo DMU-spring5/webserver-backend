@@ -31,8 +31,6 @@ public class AuthService {
             userEntity.setImgUrl("default_url"); // 기본 URL
         }
 
-        userEntity.setServiceAgreed("Y");
-        userEntity.setLocationAgreed("Y");
 
         UserEntity savedUser = userRepository.save(userEntity);
         String userIdentifier = savedUser.getUserId();
