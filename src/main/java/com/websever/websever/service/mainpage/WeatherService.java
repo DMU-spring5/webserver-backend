@@ -39,7 +39,7 @@ public class WeatherService {
     }
 
     public WeatherResponse getWeather(int nx, int ny) {
-        String baseDate = "20251126";
+        String baseDate = "20251202";
         String baseTime = "0500";
         final String BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst";
 
