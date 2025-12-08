@@ -30,8 +30,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // ⚠️ Render 배포 URL 추가 (프론트엔드 서비스 URL로 변경하세요)
-        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:8080",
+                "https://webserver-backend.onrender.com"
+        ));
+
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
