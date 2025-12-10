@@ -61,11 +61,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/community/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/v1/transport/**").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/community/create").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/v1/community/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/community/**").authenticated()
-                        .requestMatchers("/api/v1/transport/**").authenticated()
                         .requestMatchers("/api/v1/mainpage/**").authenticated()
                         .requestMatchers("/api/v1/health/**").authenticated()
                         .requestMatchers("/api/v1/mypage/**").authenticated()
