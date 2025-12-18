@@ -29,6 +29,6 @@ public class BusArrivalDto {
         private String routeId;     // 노선 ID
 
         private String lowPlate1;   // 저상버스 여부
-        private int remainSeatCnt1; // 남은 좌석 수 (빈자리)
+        private int remainSeatCnt1;
     }
 }

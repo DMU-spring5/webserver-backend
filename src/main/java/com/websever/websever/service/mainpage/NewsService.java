@@ -1,6 +1,5 @@
 package com.websever.websever.service.mainpage;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,7 +10,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +36,7 @@ public class NewsService {
                     ? con.getInputStream()
                     : con.getErrorStream();
 
-            return readBody(responseStream);  // ★ JSON 문자열 그대로 반환
+            return readBody(responseStream);
 
         } catch (Exception e) {
             throw new RuntimeException("네이버 뉴스 검색 실패", e);

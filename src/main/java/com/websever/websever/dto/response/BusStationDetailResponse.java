@@ -29,9 +29,9 @@ public class BusStationDetailResponse {
     @Setter
     @ToString
     public static class Lane {
-        private String busNo;       // 버스 번호 (예: 100, M5333)
-        private int type;           // 버스 타입 (11:간선, 12:지선 등)
-        private int busID;          // 버스 노선 ID
-        private String busCityName; // 소속 도시 (예: 서울, 경기)
+        private String busNo;
+        private int type;
+        private int busID;
+        private String busCityName;
     }
 }

@@ -58,10 +58,6 @@ public class HealthService {
                 .build();
     }
 
-    /**
-     * [수정] 목표 설정 및 저장 (기존 calculatePlan 대체)
-     * 이 메서드가 없어서 Controller에서 오류가 났었습니다.
-     */
     @Transactional
     public HealthGoalResponse saveGoal(String userId, CalorieCalculatorDto.Request request) {
         UserEntity user = userRepository.findByUserId(userId)
@@ -106,9 +102,6 @@ public class HealthService {
                 .build();
     }
 
-    /**
-     * [신규] 사용자의 가장 최근 목표 상세 정보 조회
-     */
     @Transactional(readOnly = true)
     public HealthGoalResponse getLatestGoal(String userId) {
         UserEntity user = userRepository.findByUserId(userId)

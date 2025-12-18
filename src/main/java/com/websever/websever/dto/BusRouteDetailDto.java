@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-// [중요] 이 어노테이션이 있어야 DTO에 없는 필드가 와도 에러가 안 납니다!
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BusRouteDetailDto {
 
@@ -19,11 +19,11 @@ public class BusRouteDetailDto {
     @JsonProperty("type")
     private String type;
 
-    // [추가된 필드] 에러 원인 해결
+
     @JsonProperty("busCityName")
     private String busCityName;
 
-    // (혹시 몰라 함께 추가해둠)
+
     @JsonProperty("busCityCode")
     private int busCityCode;
 
@@ -49,7 +49,7 @@ public class BusRouteDetailDto {
     private List<StationDto> stations;
 
     @Data
-    @JsonIgnoreProperties(ignoreUnknown = true) // 내부 클래스에도 필수
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class StationDto {
         @JsonProperty("idx")
         private int sequence;

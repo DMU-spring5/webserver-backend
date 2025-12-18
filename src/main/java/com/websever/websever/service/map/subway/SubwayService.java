@@ -23,7 +23,7 @@ public class SubwayService {
     private final String apiKey;
     private final ObjectMapper objectMapper;
 
-    // 기본 URL 상수 정의
+
     private static final String BASE_URL = "https://api.odsay.com/v1/api";
 
     public SubwayService(@Qualifier("odsayWebClient") WebClient odsayWebClient,
@@ -34,14 +34,12 @@ public class SubwayService {
         this.objectMapper = objectMapper;
     }
 
-    /**
-     * 실제 지하철 경로 검색 (ODsay API 연동)
-     */
+
     public Mono<SubwayPathResponse> searchSubwayPath(String region, String departure, String arrival, String time, String dayType) {
         return getStationCoordinate(departure)
                 .zipWith(getStationCoordinate(arrival))
                 .flatMap(tuple -> {
-                    // tuple.getT1() -> 출발역 좌표, tuple.getT2() -> 도착역 좌표
+                    // tuple.getT1() -> 출발역 좌표, tuple.getT2()
                     return callPathApi(
                             tuple.getT1().x(), tuple.getT1().y(),
                             tuple.getT2().x(), tuple.getT2().y()
@@ -49,20 +47,15 @@ public class SubwayService {
                 });
     }
 
-    /**
-     * 역 이름으로 좌표(X, Y) 조회
-     * API: searchStation
-     * 수정사항: URI 직접 조립으로 이중 인코딩 방지
-     */
+
     private Mono<Coordinate> getStationCoordinate(String stationName) {
-        // "서울역" -> "서울" (검색 정확도 향상)
+
         String cleanedName = stationName.endsWith("역") ? stationName.substring(0, stationName.length() - 1) : stationName;
 
         try {
             String encodedKey = URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
             String encodedName = URLEncoder.encode(cleanedName, StandardCharsets.UTF_8);
 
-            // [핵심 수정] 문자열로 URI 직접 생성 -> WebClient의 자동 인코딩 간섭 차단
             String urlString = String.format("%s/searchStation?apiKey=%s&stationName=%s&stationClass=2",
                     BASE_URL, encodedKey, encodedName);
             URI uri = URI.create(urlString);
@@ -103,16 +96,12 @@ public class SubwayService {
         }
     }
 
-    /**
-     * 좌표를 이용한 대중교통 길찾기
-     * API: searchPubTransPathT
-     * 수정사항: URI 직접 조립
-     */
+
     private Mono<SubwayPathResponse> callPathApi(String sx, String sy, String ex, String ey) {
         try {
             String encodedKey = URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
 
-            // [핵심 수정] 문자열로 URI 직접 생성
+
             String urlString = String.format("%s/searchPubTransPathT?apiKey=%s&SX=%s&SY=%s&EX=%s&EY=%s&SearchPathType=1",
                     BASE_URL, encodedKey, sx, sy, ex, ey);
             URI uri = URI.create(urlString);
@@ -147,7 +136,6 @@ public class SubwayService {
 
             int busTransitCount = info.get("busTransitCount").asInt();
             int subwayTransitCount = info.get("subwayTransitCount").asInt();
-            // 환승 횟수 계산 (전체 탑승 횟수 - 1, 음수 방지)
             int transferCount = Math.max(0, busTransitCount + subwayTransitCount - 1);
 
             int stationCount = info.get("totalStationCount").asInt();

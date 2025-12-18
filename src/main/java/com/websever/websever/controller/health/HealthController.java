@@ -20,10 +20,7 @@ public class HealthController {
     private final HealthService healthService;
     private final UserService userService;
 
-    /**
-     * 칼로리 계산기 결과 저장 및 조회 (POST)
-     * 단순 조회가 아니라 '내 기록'으로 저장합니다.
-     */
+
     @PostMapping("/record")
     public ResponseEntity<ExerciseCalculateResponse> recordHealth(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -44,15 +41,11 @@ public class HealthController {
             @RequestBody CalorieCalculatorDto.Request request
     ) {
         String currentUserId = userDetails.getUsername();
-        // 서비스 메서드 이름 변경 (calculatePlan -> saveGoal) 및 리턴 타입 통일
         HealthGoalResponse response = healthService.saveGoal(currentUserId, request);
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * [신규] 사용자 목표 상세 정보 조회 API (PPT 12p)
-     * GET /api/v1/health/goal
-     */
+
     @GetMapping("/goal")
     public ResponseEntity<HealthGoalResponse> getHealthGoal(
             @AuthenticationPrincipal UserDetails userDetails

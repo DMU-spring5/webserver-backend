@@ -18,9 +18,7 @@ public class ExerciseService {
 
     private final ExerciseRepository exerciseRepository;
 
-    /**
-     * 운동 카테고리 및 도구별 목록 조회 (PPT 49p ~ 55p)
-     */
+
     @Transactional(readOnly = true)
     public List<ExerciseResponse> getExercises(String name) { // category, tool 제거
 
@@ -35,16 +33,14 @@ public class ExerciseService {
         else {
             exercises = exerciseRepository.findAllByOrderByNameAsc();
         }
-        // 기존의 category, tool 필터링 로직 제거
+
 
         return exercises.stream()
                 .map(ExerciseResponse::from)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 특정 운동 상세 조회 (PPT 56p)
-     */
+
     @Transactional(readOnly = true)
     public ExerciseResponse getExerciseDetail(Integer exerciseId) {
         ExerciseEntity exercise = exerciseRepository.findById(exerciseId)
@@ -58,8 +54,6 @@ public class ExerciseService {
         ExerciseEntity exercise = exerciseRepository.findById(exerciseId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 운동을 찾을 수 없습니다. ID: " + exerciseId));
 
-        // 칼로리 계산 공식: 1분당 칼로리 * 시간(분)
-        // (DB의 calories가 1분당 소모 칼로리라고 가정)
         int totalCalories = exercise.getCalories() * durationMin;
 
         return ExerciseCalculateResponse.builder()
@@ -82,7 +76,6 @@ public class ExerciseService {
             intensityMultiplier = 1.2;
         }
 
-        // 2. 체중 반영 비율 (DB의 calories가 70kg 성인 기준 1분 소모량이라고 가정할 때 보정)
         // 공식: (DB칼로리) * (사용자체중 / 70kg) * 강도 * 시간
         double weightRatio = request.getCurrentWeight() / 70.0;
 

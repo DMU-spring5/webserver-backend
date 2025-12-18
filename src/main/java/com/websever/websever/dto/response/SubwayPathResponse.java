@@ -9,8 +9,8 @@ public record SubwayPathResponse(
         int transferCount,      // 환승 횟수
         int stationCount,       // 총 정차 역 수
         int totalFare,          // 총 요금 (원)
-        String departureTime,   // 출발 시간 (HH:mm)
-        String arrivalTime,     // 도착 시간 (HH:mm)
+        String departureTime,
+        String arrivalTime,
         List<PathSegment> paths // 상세 경로 (환승 정보 포함)
 ) {
     public record PathSegment(

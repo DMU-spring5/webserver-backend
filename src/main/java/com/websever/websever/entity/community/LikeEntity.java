@@ -8,7 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "likes") // DB 예약어 충돌 방지를 위해 테이블명을 likes로 지정
+@Table(name = "likes")
 @Getter
 @Setter
 @NoArgsConstructor

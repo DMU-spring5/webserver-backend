@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface HealthRepository extends JpaRepository<HealthEntity, Integer> {
-    // 필요 시 사용자의 날짜별 운동 기록 조회 등의 메서드 추가 가능
 }
