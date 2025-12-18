@@ -1,7 +1,6 @@
 package com.websever.websever.service.mainpage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.websever.websever.config.openapi.KmaTimeUtil;
 import com.websever.websever.dto.response.KmaResponse;
 import com.websever.websever.dto.response.WeatherResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -72,7 +70,7 @@ public class WeatherService {
             throw new RuntimeException("기상청 API 호출 실패: " + response.getStatusCode());
         }
 
-        // JSON 파싱
+
         KmaResponse kma;
         try {
             kma = objectMapper.readValue(response.getBody(), KmaResponse.class);

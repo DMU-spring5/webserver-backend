@@ -20,7 +20,7 @@ public class MyLikedPostDetailResponse {
         return MyLikedPostDetailResponse.builder()
                 .postId(post.getPost_id())
                 .title(post.getTitle())
-                .content(post.getContent()) // 요약 없이 전체 내용 반환
+                .content(post.getContent())
                 .writerNickname(post.getUsers_id() != null ? post.getUsers_id().getNickname() : "알 수 없음")
                 .createdAt(post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .likeCount(likeCount)

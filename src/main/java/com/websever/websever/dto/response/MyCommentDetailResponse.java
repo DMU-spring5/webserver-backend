@@ -17,7 +17,7 @@ public class MyCommentDetailResponse {
     // 원본 게시글 정보 (상세 내용 포함)
     private Integer postId;
     private String postTitle;
-    private String postContent; // 리스트엔 없던 본문 추가
+    private String postContent;
     private String postCreatedAt;
     private String postWriterNickname; // 원글 작성자
 

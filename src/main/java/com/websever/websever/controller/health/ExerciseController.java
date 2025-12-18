@@ -17,16 +17,12 @@ public class ExerciseController {
 
     private final ExerciseService exerciseService;
 
-    /**
-     * [최종 수정] 운동 목록 조회 및 검색 API
-     * 1. GET /api/v1/health/exercise?name=스쿼트 -> 검색 (name 파라미터만 허용)
-     * 2. GET /api/v1/health/exercise -> 전체 조회 (name 파라미터 생략)
-     */
+
     @GetMapping
     public ResponseEntity<List<ExerciseResponse>> getExercises(
-            @RequestParam(required = false) String name // name 파라미터만 허용하도록 명시
+            @RequestParam(required = false) String name
     ) {
-        // Service에는 name만 전달
+
         List<ExerciseResponse> responses = exerciseService.getExercises(name);
         return ResponseEntity.ok(responses);
     }

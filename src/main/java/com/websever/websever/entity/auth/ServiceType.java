@@ -27,7 +27,7 @@ public enum ServiceType {
 
     private final String koreanName;
     private final int totalMonths;
-    private final Map<String, Integer> promotionMonths; //계급명, 복무 개월
+    private final Map<String, Integer> promotionMonths;
 
     ServiceType(String koreanName, int totalMonths, Map<String, Integer> promotionMonths) {
         this.koreanName = koreanName;

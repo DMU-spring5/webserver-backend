@@ -90,7 +90,7 @@ public class AuthService {
         int tempPasswordInt = 100000 + random.nextInt(900000); // 100000 ~ 999999
         String tempPassword = String.valueOf(tempPasswordInt); // 평문 임시 비밀번호
 
-        // 2. 임시 비밀번호를 해시하여 DB에 저장 (업데이트)
+        // 2. 임시 비밀번호를 해시하여 DB에 저장
         String hashedPassword = passwordEncoder.encode(tempPassword);
         user.setPassword(hashedPassword);
 

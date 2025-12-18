@@ -23,7 +23,7 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // 사용자 로그인 아이디(NOT NULL UNIQUE)
+    // 사용자 로그인 아이디
     @Column(name = "user_id", length = 30, nullable = false, unique = true)
     private String userId;
 
@@ -35,12 +35,10 @@ public class UserEntity {
     @Column(length = 20)
     private String nickname;
 
-    // 서비스 약관 동의 (DEFAULT 'N')
     @Column(name = "service_agreed", columnDefinition = "CHAR(1)")
     @ColumnDefault("'N'") //Y OR N
     private String serviceAgreed;
 
-    // 위치 정보 약관 동의 (DEFAULT 'N')
     @Column(name = "location_agreed", columnDefinition = "CHAR(1)")
     @ColumnDefault("'N'")
     private String locationAgreed;
@@ -62,16 +60,15 @@ public class UserEntity {
     @Column(name = "enlist_date", nullable = false)
     private LocalDate enlistDate;
 
-    // 프로필 이미지 URL (NOT NULL)
     @Column(name = "img_url", nullable = false)
     private String imgUrl;
 
-    // 생성 시간 (TIMESTAMP DEFAULT NOW())
+    // 생성 시간
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private OffsetDateTime createdAt;
 
-    // 수정 시간 (TIMESTAMP DEFAULT NOW() ON UPDATE CURRENT_TIMESTAMP) - 트리거 처리
+    // 수정 시간
     @Column(name = "updated_at", insertable = false, updatable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime updatedAt;
 }

@@ -32,5 +32,5 @@ public class ExerciseEntity {
     private String tool; // 운동 도구 (예: 덤벨, 맨몸, 바벨)
 
     @Column
-    private Integer calories; // 소모 칼로리
+    private Integer calories;
 }

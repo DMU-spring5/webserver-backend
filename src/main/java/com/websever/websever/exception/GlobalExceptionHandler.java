@@ -26,8 +26,6 @@ public class GlobalExceptionHandler {
             return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
         }
 
-        // 그 외의 처리되지 않은 RuntimeException은 500으로 남겨둡니다.
-        // 또는 여기에서 500을 명시적으로 반환하는 로직을 추가할 수 있습니다.
         return new ResponseEntity<>(
                 new ErrorResponse("INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다."),
                 HttpStatus.INTERNAL_SERVER_ERROR

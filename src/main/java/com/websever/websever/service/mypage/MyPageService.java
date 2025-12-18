@@ -44,12 +44,11 @@ public class MyPageService {
             throw new IllegalArgumentException("기존 비밀번호가 일치하지 않습니다.");
         }
 
-        // 2. 새 비밀번호 유효성 검사 (필요 시 추가 로직 구현)
-        // 예: if (request.getNewPassword().length() < 8) ...
+
 
         // 3. 새 비밀번호 암호화 및 저장
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        // @Transactional 안에서는 save 호출 없이도 더티 체킹으로 업데이트되지만, 명시적으로 호출해도 무방합니다.
+
     }
 
     /**

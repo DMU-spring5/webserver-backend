@@ -49,7 +49,6 @@ public class AuthController {
     // [비밀번호 찾기 - 임시 비밀번호 발급]
     @PostMapping("/find-password")
     public ResponseEntity<String> findPassword(@RequestBody FindPasswordRequest findPasswordRequest) {
-        // 임시 비밀번호를 생성하고 DB를 업데이트한 후, 평문 임시 비밀번호를 반환
         String tempPassword = authService.resetAndRetrieveTempPassword(
                 findPasswordRequest.getNickname(),
                 findPasswordRequest.getUserId()

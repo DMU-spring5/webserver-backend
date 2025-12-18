@@ -39,11 +39,8 @@ public class TransportationController {
             @RequestParam String startAddress,
             @RequestParam String endAddress) {
 
-        // TransportationService의 getWalkingRoute 메서드를 호출합니다.
-        // 이 메서드 내부에서 Naver Geocoding 2회 호출 및 T Map API 호출이 순차적으로 처리됩니다.
         String routeJson = walkingService.getWalkingRoute(startAddress, endAddress);
 
-        // T Map 경로 결과 JSON을 그대로 반환합니다.
         return ResponseEntity.ok(routeJson);
     }
 }

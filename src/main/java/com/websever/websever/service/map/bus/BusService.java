@@ -33,7 +33,7 @@ public class BusService {
         this.objectMapper = objectMapper;
     }
 
-    // 1단계: 버스 노선 검색 (기존 유지 - String 반환)
+
     public Mono<String> searchBusLane(String cityCode, String busNo) {
         try {
             String encodedKey = URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
@@ -60,9 +60,7 @@ public class BusService {
         }
     }
 
-    /**
-     * 2단계: 노선 상세 조회 (DTO 반환으로 변경)
-     */
+
     public Mono<BusRouteDetailDto> getBusLaneDetail(String laneId) {
         try {
             String encodedKey = URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
@@ -87,7 +85,7 @@ public class BusService {
                                 return Mono.error(new RuntimeException("API 응답에 result가 없습니다. 에러: " + root.toString()));
                             }
 
-                            // result 객체를 DTO로 자동 매핑
+
                             BusRouteDetailDto dto = objectMapper.treeToValue(resultNode, BusRouteDetailDto.class);
                             return Mono.just(dto);
 

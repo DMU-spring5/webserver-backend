@@ -19,10 +19,7 @@ public class BusStationController {
 
     private final BusStationService busStationService;
 
-    /**
-     * 정류장 검색 API (PPT 72p)
-     * GET /api/v1/transport/bus/station/search?name=강남&x=127.xxx&y=37.xxx
-     */
+
     @GetMapping("/search")
     public Mono<ResponseEntity<List<BusStationDto>>> searchStation(
             @RequestParam String name,

@@ -20,7 +20,7 @@ public class UnitService {
     private final UserRepository userRepository;
     private final UnitRepository unitRepository;
 
-    // 🔥 1. 생성
+
     @Transactional
     public UnitResponse create(String currentUserId, UnitRequest request) {
 
@@ -42,7 +42,7 @@ public class UnitService {
         return UnitResponse.create(savedUnit);
     }
 
-    // 🔥 2. 전체 목록 조회
+
     @Transactional(readOnly = true)
     public List<UnitResponse> getAllUnits() {
         return unitRepository.findAll().stream()
@@ -50,7 +50,7 @@ public class UnitService {
                 .collect(Collectors.toList());
     }
 
-    // 🔥 3. 단일 조회
+
     @Transactional(readOnly = true)
     public UnitResponse getUnitById(Integer unitId) {
         UnitEntity unit = unitRepository.findById(unitId)
@@ -59,7 +59,7 @@ public class UnitService {
         return UnitResponse.create(unit);
     }
 
-    // 🔥 4. 수정
+
     @Transactional
     public UnitResponse updateUnit(Integer unitId, String currentUserId, UnitRequest request) {
 
@@ -81,7 +81,7 @@ public class UnitService {
         return UnitResponse.create(unit);
     }
 
-    // 🔥 5. 삭제
+
     @Transactional
     public void deleteUnit(Integer unitId, String currentUserId) {
 

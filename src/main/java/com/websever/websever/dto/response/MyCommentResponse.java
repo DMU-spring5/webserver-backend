@@ -13,7 +13,7 @@ public class MyCommentResponse {
     private String commentContent;  // 댓글 내용
     private String commentedAt;     // 댓글 작성일
 
-    private Integer postId;         // 게시글 ID (이동용)
+    private Integer postId;
     private String postTitle;       // 게시글 제목
 
     public static MyCommentResponse from(CommentEntity comment) {
@@ -21,7 +21,7 @@ public class MyCommentResponse {
                 .commentId(comment.getCommentId())
                 .commentContent(comment.getContent())
                 .commentedAt(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
-                .postId(comment.getPostId().getPost_id()) // postEntity의 getter 사용
+                .postId(comment.getPostId().getPost_id())
                 .postTitle(comment.getPostId().getTitle())
                 .build();
     }

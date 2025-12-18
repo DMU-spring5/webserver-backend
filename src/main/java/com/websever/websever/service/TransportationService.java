@@ -44,9 +44,7 @@ public class TransportationService {
     private final String geocodingApiUrl = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode";
     private final String odsayBaseUrl = "https://api.odsay.com/v1/api/searchPubTransPath";
 
-    /**
-     * 1. 네이버 지오코딩 (장소/주소 -> 좌표 변환)
-     */
+
     public String searchLocationByQuery(String query) {
         if (query == null || query.isBlank()) {
             throw new IllegalArgumentException("query는 필수입니다.");
@@ -108,9 +106,7 @@ public class TransportationService {
         }
     }
 
-    /**
-     * 2. ODsay 대중교통 길찾기 (좌표 기반)
-     */
+
     public String searchPubTransPath(double sx, double sy, double ex, double ey) {
         try {
             String encodedKey = URLEncoder.encode(odsayApiKey, StandardCharsets.UTF_8);
@@ -135,10 +131,7 @@ public class TransportationService {
         }
     }
 
-    /**
-     * 3. 통합 길찾기 (주소 텍스트 -> 좌표 변환 -> 길찾기)
-     * 예: "서울역" -> "강남역" 입력 시 경로 반환
-     */
+
     public String getRouteByAddresses(String startAddress, String endAddress) {
         // 출발지 좌표 획득
         Coordinate startCoord = getCoordinateFromAddress(startAddress);
@@ -149,10 +142,9 @@ public class TransportationService {
         return searchPubTransPath(startCoord.x, startCoord.y, endCoord.x, endCoord.y);
     }
 
-    // 내부 헬퍼 클래스 (좌표 저장용)
+
     private record Coordinate(double x, double y) {}
 
-    // 주소 문자열을 받아 좌표(x, y)를 추출하는 내부 메서드
     private Coordinate getCoordinateFromAddress(String address) {
         String jsonResult = searchLocationByQuery(address);
         try {
@@ -172,9 +164,7 @@ public class TransportationService {
         }
     }
 
-    /**
-     * (참고용) 임시 메서드 - 필요 없으면 삭제 가능
-     */
+
     public String findSubwayPath(String start, String end) {
         return "{\"result\": \"success\", \"message\": \"Path finding logic is not implemented yet.\"}";
     }
